@@ -1,5 +1,8 @@
 # Columbo
 
+[![docs](https://img.shields.io/badge/docs-online-2ea44f?logo=materialformkdocs&logoColor=white)](https://siddartham.github.io/federated-knowledge-discovery-tool/)
+[![docs build](https://github.com/siddartham/federated-knowledge-discovery-tool/actions/workflows/docs.yml/badge.svg)](https://github.com/siddartham/federated-knowledge-discovery-tool/actions/workflows/docs.yml)
+
 📖 **[Read the documentation →](https://siddartham.github.io/federated-knowledge-discovery-tool/)**
 
 A command-line agent for an enterprise knowledge base spread across Slack,
