@@ -1,0 +1,67 @@
+[project]
+name = "columbo-py"
+version = "0.1.0"
+description = "Multi-source enterprise knowledge agent: search, scrape, score, and synthesize a cited answer using Claude."
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.34",
+    "pydantic>=2.7",
+    "httpx>=0.27",
+    "playwright>=1.45",
+    "diskcache>=5.6",
+    "typer>=0.12",
+    "rich>=13.7",
+    "jinja2>=3.1",
+    "structlog>=24.1",
+    "tenacity>=8.3",
+    "google-auth>=2.30",
+    "google-auth-oauthlib>=1.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.10",
+    "ruff>=0.5",
+    "pytest>=8.2",
+    "pytest-asyncio>=0.23",
+]
+
+[project.scripts]
+columbo = "columbo_py.cli.main:app"
+
+[tool.setuptools.packages.find]
+include = ["columbo_py*"]
+
+# Non-Python files loaded at runtime via __file__ (prompt templates and the
+# per-source LLM guidance) must ship in the wheel, not just the source tree.
+[tool.setuptools.package-data]
+"columbo_py.config" = ["*.toml"]
+"columbo_py.evals" = ["*.jsonl"]
+"columbo_py.engine.prompts" = ["templates/*.j2"]
+"columbo_py.sources.github" = ["*.md"]
+"columbo_py.sources.slack" = ["*.md"]
+"columbo_py.sources.confluence" = ["*.md"]
+"columbo_py.sources.jira" = ["*.md"]
+"columbo_py.sources.drive" = ["*.md"]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+
+# Third-party deps that ship no type stubs / py.typed marker. Under strict
+# mode these otherwise surface as import-untyped errors on every run.
+[[tool.mypy.overrides]]
+module = ["diskcache.*", "google_auth_oauthlib.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["columbo_py/tests"]

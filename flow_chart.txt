@@ -1,0 +1,206 @@
+════════════════════════════════════════════════════════════════════════
+ COLUMBO — question → cited answer
+════════════════════════════════════════════════════════════════════════
+
+USER
+ │  $ columbo ask "How does our auth flow handle token refresh?"
+ ▼
+┌───────────────────────────────────────────────────────────────────────┐
+│ CLI ENTRY  cli/main.py :: ask()  →  _ask()                            │
+│  • configure_logging()          structlog JSON → stderr               │
+│  • cache   = CacheStore()       4 namespaced diskcaches               │
+│  • emitter = EventEmitter(run_id, ~/.columbo/runs/<run>.jsonl)        │
+│  • gate    = DomainGate.load(domains.json, allow_seed=SEED_DOMAINS)   │
+│  • dict.   = DictionaryClient()   (lookup.com / COLUMBO_DICTIONARY_*) │
+│  • BrowserSession(persistent profile)  ─┐ async context               │
+│      fetcher  = WebFetcher(session,cache,emitter)                     │
+│      registry = _build_registry(...)  → github_code, github_issues,   │
+│                 slack, confluence, jira, drive  (lazy-init on 1st use)│
+│      llm      = ClaudeClient(cache, emitter)                          │
+└────────────────────────────────┬──────────────────────────────────────┘
+                                 ▼
+┌───────────────────────────────────────────────────────────────────────┐
+│ orchestrator/loop.py :: run()                                         │
+│   state = State(question)      cost = CostTracker(max_cost_usd)       │
+│   emit run_start ; confidence=0 ; iteration=0                         │
+└────────────────────────────────┬──────────────────────────────────────┘
+                                 ▼
+        ╔════════════════════════════════════════════════════════╗
+        ║  MAIN LOOP   while iteration < max_iterations (def 6)  ║
+        ╚════════════════════════════════════════════════════════╝
+                                 │  iteration += 1 ; emit iteration_start
+                                 ▼
+   ┌────────────────────────────────────────────────────────── ──────┐
+   │ ① PLAN   _plan()   model = Sonnet   request_type="plan"        │
+   │   render_prompt("orchestrate.j2", ...):                         │
+   │     • sources_block  ← registry.sources_prompt_block()          │
+   │           each source's GUIDANCE.md (CQL/JQL/code-search/Slack) │
+   │     • evidence_summary() digest ← State:                        │
+   │           - searches/scrapes done so far                        │
+   │           - dictionary{acronym→sense(s)}  (jargon defined)      │
+   │           - top-N scored evidence w/ permalinks                 │
+   │     • iteration / max / confidence_cutoff                       │
+   │   → LLM.generate() → extract_json → OrchestrationResponse:      │
+   │        thinking, confidence{4 dims}, actions{searches,scrapes,  │
+   │        lookups}                                                 │
+   │   cost.record(...) ; emit plan_complete                         │
+   │   confidence = composite = mean(4 dims)/13                      │
+   └───────────────┬─────────────────────────────────────────────────┘
+                   ▼
+        ┌───────────────── EXIT CHECKS (in order) ──────────────────┐
+        │  confidence ≥ 0.8 ?        → reason=confidence_reached ─┐ │
+        │  cost.exceeded() ?         → reason=cost_budget_exceeded┼─┤ break
+        │  no searches/scrapes/lookups? → reason=no_actions ──────┘ │
+        └──────────────────────────┬────────────────────────────────┘
+                                   │ else: actions to run
+                                   ▼
+   ┌──────────────────────────────────────────────────────────────────┐
+   │ ② EXECUTE   actions.py :: execute_actions()                     │
+   │   (wrapped in try/except ErrAborted → reason=aborted, break)     │
+   │                                                                  │
+   │   ┌── 2a  _run_actions() — pre-resolve scrape URLs (serial) ──┐  │
+   │   │   for each scrape url:                                    │  │
+   │   │     should_skip_url()?  (open-in-app / meeting / auth-    │  │
+   │   │        walled regex + blocked extensions) → emit          │  │
+   │   │        scrape_skipped, drop                               │  │
+   │   │     gate.allows(url)?   allowlist→ok  denylist→drop       │  │
+   │   │        unknown host → interactive y/N/abort prompt        │  │
+   │   │        (persist to domains.json; 'abort'→ErrAborted)      │  │
+   │   └───────────────────────────┬───────────────────────────────┘  │
+   │                               ▼                                  │
+   │   ┌── 2b  FAN-OUT — asyncio.gather(all actions concurrently) ─┐  │
+   │   │                                                           │  │
+   │   │   SEARCH ─┐   registry.search(source,q,opts)              │  │
+   │   │           │     cache hit? → return                       │  │
+   │   │           │     miss → source.search() in native syntax   │  │
+   │   │           │        (CQL/JQL/code qualifiers/Slack mods)   │  │
+   │   │           │     → Results ; cache.set(TTL 6h)             │  │
+   │   │           │     emit search_complete                      │  │
+   │   │                                                           │  │
+   │   │   SCRAPE ─┐   fetcher.fetch(url) via browser              │  │
+   │   │           │     cache hit? → return (TTL 24h)             │  │
+   │   │           │     miss → navigate, extract text             │  │
+   │   │           │     emit scrape_complete                      │  │
+   │   │                                                           │  │
+   │   │   LOOKUP ─┐   source.lookup(term) → single Result         │  │
+   │   │           │     stored into state.dictionary              │  │
+   │   │           │     emit lookup_complete                      │  │
+   │   └───────────────────────────┬───────────────────────────────┘  │
+   │                               ▼                                  │
+   │   ┌── 2c  _enrich_acronyms() — dictionary auto-enrichment ────┐  │
+   │   │   scan question + result titles/content + lookups         │  │
+   │   │   extract_acronyms() (2–8 caps, minus stoplist)           │  │
+   │   │   new ones (∉ dictionary_checked):                        │  │
+   │   │     gather( dictionary.define(a) )  → list of senses      │  │
+   │   │       404/empty → skip ; error → emit ok=False            │  │
+   │   │     _format_senses() → numbered, bounded → state.dict.    │  │
+   │   │   emit acronym_resolved                                   │  │
+   │   └───────────────────────────┬───────────────────────────────┘  │
+   │                               ▼                                  │
+   │   ┌── 2d  _score_new_evidence() — model = Haiku ──────────────┐  │
+   │   │   batch every NEW result/scrape → score 0–13 on           │  │
+   │   │     relevance / answer_potential / context / quality      │  │
+   │   │   extract_json → ScoreResult (hardened, per-batch try)    │  │
+   │   │   store composite in state.scored_results                 │  │
+   │   │   cost.record ; emit score_complete                       │  │
+   │   └───────────────────────────────────────────────────────────┘  │
+   └───────────────┬──────────────────────────────────────────────────┘
+                   │  emit iteration_complete(terminated=False)
+                   └────────────► back to LOOP TOP (re-PLAN = re-assess)
+                                   │
+        ═══════════════════════════╪══════ loop exits on a reason ══════
+                                   ▼
+   ┌──────────────────────────────────────────────────────────────────┐
+   │ ③ SYNTHESIZE   _synthesize()   model = Opus                     │
+   │   select_evidence(state):                                        │
+   │     rank all candidates by (-score, source, id)  ← deterministic │
+   │     keep those ≥ threshold, min-guarantee floor, char budget     │
+   │   render_prompt("synthesize.j2", question, evidence[])           │
+   │     each item: title, content, permalink, score                  │
+   │   → LLM.generate() → extract_json → SynthesisResponse:           │
+   │        answer (markdown, inline [source:id]), citations[]        │
+   │   cost.record(...)                                               │
+   │                                                                  │
+   │   POST-PROCESS (linkify.py, deterministic):                      │
+   │     permalinks = {(source,id): permalink}  from evidence         │
+   │     • linkify_citations() → [source:id](permalink) inline        │
+   │     • render_sources_footer() → **Sources** bullet list          │
+   │   emit synthesize_complete(evidence, citations, linked_citations)│
+   └───────────────┬──────────────────────────────────────────────────┘
+                   ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ RETURN + CLEANUP                                                     │
+│   RunResult{answer, citations, iterations, final_confidence,         │
+│             terminated_reason, cost_usd}                             │
+│   emit run_end ; finally: fetcher.aclose, dictionary.aclose,         │
+│                          emitter.close, cache.close                  │
+└────────────────────────────────┬─────────────────────────────────────┘
+                                 ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ PRINT  _print_result()                                               │
+│   console.print(Markdown(answer))   ← clickable links + Sources      │
+│   dim line: N iteration(s), confidence 0.xx, terminated: <reason>,   │
+│             est. cost $x.xxxx                                        │
+└────────────────────────────────┬─────────────────────────────────────┘
+                                 ▼
+                               USER
+
+Call tree (top-down)
+
+
+ask()                                             cli/main.py:97  [sync entry]
+└─ asyncio.run( _ask() )
+   └─ _ask()                                      cli/main.py:60
+      ├─ CacheStore()                             → opens 4 disk caches (response/search/lookup/scrape)
+      ├─ EventEmitter()                           → opens run-<id>.jsonl
+      ├─ BrowserSession.__aenter__ → start()      → Playwright persistent context (real logged-in profile)
+      ├─ WebFetcher()
+      ├─ _build_registry()                        → registers 5 sources (no I/O yet)
+      ├─ ClaudeClient()
+      └─ orchestrator.run(question, registry, fetcher, llm, emitter)     loop.py:66
+         ├─ State() ; CostTracker() ; emit run_start
+         │
+         └─ while iteration < max_iterations:               ◄─────────────┐   THE LOOP
+            ├─ emit iteration_start                                       │
+            ├─ _plan()                              loop.py:136           │   LLM #1
+            │  ├─ registry.kinds_prompt_block()     → per-source guides   │   Sonnet 4.6
+            │  ├─ state.evidence_summary()          → digest + top scores │
+            │  ├─ render_prompt("orchestrate.j2")                         │
+            │  ├─ llm.generate(model=sonnet) ─ ClaudeClient.generate      │
+            │  │     ├─ response_cache.get()         → hit? return, no API │   → Anthropic API
+            │  │     └─ client.messages.create()     → Anthropic API       │
+            │  ├─ cost.record(sonnet)                                      │
+            │  └─ extract_json → OrchestrationResponse.model_validate      │
+            ├─ gate: confidence ≥ 0.8   → break "confidence_reached" ──────┼──► synthesize
+            ├─ gate: cost.exceeded()    → break "cost_budget_exceeded" ────┤
+            ├─ gate: no actions         → break "no_actions_proposed" ─────┤
+            └─ execute_actions()                    actions.py:52          │
+               ├─ _run_actions()  ── Phase 1: asyncio.gather ─────────────┐│
+               │  ├─ do_search(a) × N                                     ││
+               │  │   └─ registry.search()                                ││
+               │  │       ├─ search_cache.get()      → hit? return        ││
+               │  │       ├─ source.initialize()     → lazy auth          ││  → GitHub/Slack/Jira/
+               │  │       └─ source.search()         → httpx → REST API   ││    Confluence/Drive API
+               │  ├─ do_scrape(u) × M                                     ││
+               │  │   └─ fetcher.fetch()                                  ││
+               │  │       ├─ scrape_cache.get()      → hit? return        ││  → Playwright browser
+               │  │       └─ _fetch_via_browser()    → page.goto/innerText││    (httpx fallback on crash)
+               │  └─ do_lookup(t) × K                                     ││
+               │      └─ registry.lookup() → source.lookup() → REST API   ││
+               │                                                          ─┘│
+               └─ _score_new_evidence()  ── Phase 2: asyncio.gather          LLM #2 / #3
+                  ├─ score_batch(b) × search batches   → Haiku, cost.record   Haiku 4.5
+                  ├─ score_batch(lookup_batch)         → Haiku  (scores lookups)
+                  └─ restitch_scrape(s) × scrapes      → Haiku, cost.record
+            └─ [loop back to _plan] ─────────────────────────────────────────┘
+         │
+         ├─ _synthesize()                          loop.py:169             LLM #4
+         │  ├─ select_evidence()                                          Opus 4.8 (once)
+         │  │   └─ _all_candidates_sorted()   → sort (−score, source, id)
+         │  ├─ render_prompt("synthesize.j2")
+         │  ├─ llm.generate(model=opus)       → Anthropic API ; cost.record
+         │  └─ extract_json → SynthesisResponse.model_validate
+         ├─ emit run_end
+         └─ return RunResult
+      └─ finally: fetcher.aclose() ; emitter.close() ; cache.close()
+   └─ _print_result()                             → rich Markdown + footer
