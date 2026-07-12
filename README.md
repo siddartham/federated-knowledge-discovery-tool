@@ -1,4 +1,4 @@
-# Columbo
+# Dossier
 
 [![docs](https://img.shields.io/badge/docs-online-2ea44f?logo=materialformkdocs&logoColor=white)](https://siddartham.github.io/federated-knowledge-discovery-tool/)
 [![docs build](https://github.com/siddartham/federated-knowledge-discovery-tool/actions/workflows/docs.yml/badge.svg)](https://github.com/siddartham/federated-knowledge-discovery-tool/actions/workflows/docs.yml)
@@ -7,7 +7,7 @@
 
 A command-line agent for an enterprise knowledge base spread across Slack,
 Confluence, GitHub, Google Drive, and Jira. Given a natural-language
-question, Columbo iteratively searches sources, scrapes referenced pages,
+question, Dossier iteratively searches sources, scrapes referenced pages,
 scores all retrieved evidence, and synthesizes a cited answer using Claude.
 
 - **No service accounts.** Every source authenticates with a credential the
@@ -23,7 +23,7 @@ scores all retrieved evidence, and synthesizes a cited answer using Claude.
   permanent (so re-runs are byte-identical and free); the search/lookup/scrape
   caches carry TTLs so live data doesn't go stale forever.
 - **Observable.** Every pipeline step emits a structured JSON event to a
-  per-run log that `columbo devtools bench`/`compare` parse directly.
+  per-run log that `dossier devtools bench`/`compare` parse directly.
 - **Guarded scraping.** Before any page is fetched, its URL passes a skip
   filter (drops open-in-app / meeting / auth-walled links) and a domain gate:
   known hosts pass, unknown hosts trigger a one-time y/N prompt whose answer is
@@ -35,10 +35,10 @@ user's own browser profile and credentials only.
 
 ## How it works
 
-Columbo runs a **(route →) plan → execute → score → synthesize** loop, using a
+Dossier runs a **(route →) plan → execute → score → synthesize** loop, using a
 different Claude model at each tier so cost tracks the stakes:
 
-![Columbo loop flow](docs/images/pipeline/loop-flow.svg)
+![Dossier loop flow](docs/images/pipeline/loop-flow.svg)
 
 - **Route (Haiku, only with MCP tools).** When an MCP tool server is configured
   and its catalog is larger than the shortlist size, a cheap routing call picks
@@ -85,13 +85,13 @@ Two things the diagram encodes that are easy to miss:
 
 Not drawn (they're cross-cutting infra, not tools the planner picks): the **4-namespace cache** guarding every leaf call, and the **event emitter** writing the JSONL run log.
 
-![Columbo tool flow](docs/images/pipeline/tool-flow.svg)
+![Dossier tool flow](docs/images/pipeline/tool-flow.svg)
 
 #### Sequence Diagram of the flow of the calls from Question to Answer
 
 Now a call-flow (sequence) view — same system, but tracing the actual calls in time from `run(question)` down to the returned answer.
 
-![Columbo call sequence](docs/images/pipeline/sequence-diagram.svg)
+![Dossier call sequence](docs/images/pipeline/sequence-diagram.svg)
 
 Same system as the master diagram, but now as a **call trace** — five lifelines, time running top to bottom, solid arrows = calls, dashed = returns.
 
@@ -190,7 +190,7 @@ The **`DomainGate.allows`** decision tree — SSRF precheck, then allow / deny /
 
 
 **`DomainGate.allows` (decision tree):**
-- An **SSRF precheck runs first and is non-overridable** ([`ssrf_reason`](columbo_py/infra/domaingate/gate.py)): a non-http(s) scheme or a private/loopback/link-local/metadata host is **DROP**ped before the allow/deny list is even consulted — so a URL planted in evidence can't point the scraper at the intranet or `169.254.169.254`.
+- An **SSRF precheck runs first and is non-overridable** ([`ssrf_reason`](dossier/infra/domaingate/gate.py)): a non-http(s) scheme or a private/loopback/link-local/metadata host is **DROP**ped before the allow/deny list is even consulted — so a URL planted in evidence can't point the scraper at the intranet or `169.254.169.254`.
 - Three interactive terminal outcomes, not two: **ALLOW** (scrape proceeds), **DENY** (`scrape_skipped`), and **ABORT** (`ErrAborted` → the loop breaks cleanly and synthesizes from whatever's gathered — a user pressing `a` or Ctrl-C doesn't crash the run).
 - The **lock + re-check** matters under concurrent fan-out: several scrapes hitting the same unknown host in one iteration won't each prompt — the first resolves it, the rest re-read the now-updated set inside the lock.
 - Answers **persist** to `domains.json`, so a host is asked about once ever, across runs; `load()` seeds `allow` from the built-in seed set ∪ the saved file.
@@ -212,7 +212,7 @@ Confirmed — `lookup("#sso-support")` calls Slack's `conversations.list` **API*
 
 1. **You don't have a URL yet.** A `#channel` name, a Drive file id, a Jira key — none of those are URLs. To scrape one you'd first have to resolve the id → its canonical URL... which is exactly the API call `lookup` already makes. Scrape's own contract is "fetch a URL *found in the evidence*" — lookup exists precisely for when the thing *isn't* a URL in the evidence, just a handle you know.
 
-2. **The web UIs for these objects are the ones scrape refuses.** Slack channels/messages render as JavaScript auth-SPAs — and `app.slack.com/...` / `*.slack.com/archives/` are literally on the scrape **skip list** ([actions.py `_URL_SKIP_PATTERNS`](columbo_py/engine/orchestrator/actions.py:49)) because they come back as empty shells or login walls. So scraping the Slack channel URL would return *nothing useful* even if you had it. The API returns clean structured fields instead.
+2. **The web UIs for these objects are the ones scrape refuses.** Slack channels/messages render as JavaScript auth-SPAs — and `app.slack.com/...` / `*.slack.com/archives/` are literally on the scrape **skip list** ([actions.py `_URL_SKIP_PATTERNS`](dossier/engine/orchestrator/actions.py:49)) because they come back as empty shells or login walls. So scraping the Slack channel URL would return *nothing useful* even if you had it. The API returns clean structured fields instead.
 
 3. **Structured data vs. rendered mush.** Lookup hands the scorer a proper Result with a real permalink and metadata (citable immediately). Scrape hands it raw `innerText` that then needs an extra Haiku restitch call to extract anything — heavier and lossier.
 
@@ -232,9 +232,9 @@ During the loop, **evidence is never evicted, no matter how low it scores.** Acc
 
 But "never filtered" needs one precise qualification — the score isn't ignored, it just acts at two points that aren't eviction:
 
-**1. What the planner *sees* each iteration is already top-N, not everything.** The digest is built by `evidence_summary(top_scored=5)` ([state.py:66](columbo_py/engine/orchestrator/state.py:66)) — it lists all the searches/scrapes done, but the "top evidence by score" section shows only the **best 5**. So a rock-bottom-scored item is retained in state but effectively invisible to the next plan/confidence call. It contributes nothing to the confidence estimate and won't tempt the planner. It's just dead weight in memory.
+**1. What the planner *sees* each iteration is already top-N, not everything.** The digest is built by `evidence_summary(top_scored=5)` ([state.py:66](dossier/engine/orchestrator/state.py:66)) — it lists all the searches/scrapes done, but the "top evidence by score" section shows only the **best 5**. So a rock-bottom-scored item is retained in state but effectively invisible to the next plan/confidence call. It contributes nothing to the confidence estimate and won't tempt the planner. It's just dead weight in memory.
 
-**2. The only actual filter runs once, at synthesis.** `select_evidence` ([state.py:169](columbo_py/engine/orchestrator/state.py:169)) is where low score finally excludes something — via three knobs:
+**2. The only actual filter runs once, at synthesis.** `select_evidence` ([state.py:169](dossier/engine/orchestrator/state.py:169)) is where low score finally excludes something — via three knobs:
 - `score_threshold` (≈ 4/13 ≈ 0.31 composite) — below this, drop it…
 - `min_guarantee` (8) — …**unless** it's in the top-8 by score, which are always included *regardless of threshold*.
 - `char_budget` (50k) — a total-size cap.
@@ -251,12 +251,12 @@ If you wanted true mid-loop pruning (e.g., drop anything scoring near-zero so it
 
 ## Guardrails
 
-Columbo reads RBAC-walled internal content, scrapes URLs it finds in that
+Dossier reads RBAC-walled internal content, scrapes URLs it finds in that
 content, and calls MCP tools with model-authored arguments — so its risk surface
 isn't a chatbot's. The design puts **a guard at every trust boundary**, each one
 implemented as a **wrapper over an existing Protocol seam** (not inline in the
 loop) and driven by one policy block, `[guardrails]`, in
-[`config/defaults.toml`](columbo_py/config/defaults.toml). Two failure
+[`config/defaults.toml`](dossier/config/defaults.toml). Two failure
 philosophies, chosen per boundary: **fail-closed** on safety/authz (when in
 doubt, block), **fail-open-with-degradation** on quality (a failed router falls
 back to lexical, a failed source is skipped — the run never crashes). The full
@@ -267,16 +267,16 @@ build reference — request-flow diagram, per-guard mechanics, config, and the
 
 | Boundary | Guard | Where it lives | Status |
 |---|---|---|---|
-| Question in | **input filter** — reject oversized questions before any LLM call; redact secrets from the run log | [`loop.run`](columbo_py/engine/orchestrator/loop.py) + [`redaction.py`](columbo_py/infra/redaction.py) | ✅ |
-| Plan → tool call | **tool gate** — allowlist (blocked tools hidden from the planner *and* refused) + validate arguments against each tool's input schema | [`GuardedToolProvider`](columbo_py/sources/mcp/guarded.py) | ✅ |
-| Execute → scrape | **SSRF guard** — drop non-http(s) schemes and private/loopback/link-local/metadata hosts; non-overridable, precedes the allow/deny list | [`ssrf_reason`](columbo_py/infra/domaingate/gate.py) | ✅ |
-| Retrieved content → LLM | **injection isolation** — fence evidence as untrusted data in every prompt; defuse forged fence markers so content can't "escape" its region | [`_defuse`](columbo_py/engine/prompts/render.py) + templates | ✅ |
-| Synthesis out | **output guard** — enforce inline citations (existing) + redact secrets that surfaced in evidence from the answer | [`_synthesize`](columbo_py/engine/orchestrator/loop.py) | ✅ |
+| Question in | **input filter** — reject oversized questions before any LLM call; redact secrets from the run log | [`loop.run`](dossier/engine/orchestrator/loop.py) + [`redaction.py`](dossier/infra/redaction.py) | ✅ |
+| Plan → tool call | **tool gate** — allowlist (blocked tools hidden from the planner *and* refused) + validate arguments against each tool's input schema | [`GuardedToolProvider`](dossier/sources/mcp/guarded.py) | ✅ |
+| Execute → scrape | **SSRF guard** — drop non-http(s) schemes and private/loopback/link-local/metadata hosts; non-overridable, precedes the allow/deny list | [`ssrf_reason`](dossier/infra/domaingate/gate.py) | ✅ |
+| Retrieved content → LLM | **injection isolation** — fence evidence as untrusted data in every prompt; defuse forged fence markers so content can't "escape" its region | [`_defuse`](dossier/engine/prompts/render.py) + templates | ✅ |
+| Synthesis out | **output guard** — enforce inline citations (existing) + redact secrets that surfaced in evidence from the answer | [`_synthesize`](dossier/engine/orchestrator/loop.py) | ✅ |
 | Data access | **identity + domain gate** — per-user OBO so every source query runs as the *user*; interactive scrape gate | domain gate ✅ · OBO ⚠️ | partial |
-| Runaway | **cost + loop caps** — dollar budget, iteration cap, named exit reasons | [`CostTracker`](columbo_py/engine/orchestrator/cost.py) + `max_iterations` | ✅ |
-| Multi-tenant | **cache isolation** — partition every cache namespace by principal so content can't leak across identities | [`CacheStore(scope=…)`](columbo_py/infra/cache/store.py) | ✅ |
-| Audit | **event log** — every search/scrape/tool/LLM call + cost, one JSONL line each | [`EventEmitter`](columbo_py/infra/events/emitter.py) | ✅ |
-| Regression | **faithfulness gate** — `devtools eval --check` fails CI when mean faithfulness drops below the floor | [`devtools eval`](columbo_py/cli/devtools.py) | ✅ |
+| Runaway | **cost + loop caps** — dollar budget, iteration cap, named exit reasons | [`CostTracker`](dossier/engine/orchestrator/cost.py) + `max_iterations` | ✅ |
+| Multi-tenant | **cache isolation** — partition every cache namespace by principal so content can't leak across identities | [`CacheStore(scope=…)`](dossier/infra/cache/store.py) | ✅ |
+| Audit | **event log** — every search/scrape/tool/LLM call + cost, one JSONL line each | [`EventEmitter`](dossier/infra/events/emitter.py) | ✅ |
+| Regression | **faithfulness gate** — `devtools eval --check` fails CI when mean faithfulness drops below the floor | [`devtools eval`](dossier/cli/devtools.py) | ✅ |
 
 Two worth calling out:
 
@@ -291,7 +291,7 @@ Two worth calling out:
   `scope` set, all four namespaces nest under `scopes/<hash>/` — different
   principals get different directories, so a cached search/scrape/tool result
   *cannot* be served across identities. The single-user CLI passes no scope and
-  behaves exactly as before; a hosted deployment sets `COLUMBO_PRINCIPAL` per
+  behaves exactly as before; a hosted deployment sets `DOSSIER_PRINCIPAL` per
   authenticated request. The scope is hashed so a raw principal id never lands on
   disk as a folder name.
 
@@ -299,7 +299,7 @@ Two worth calling out:
 
 - **Per-user OBO / token-exchange.** The MCP path already sends a per-user
   bearer so the downstream platform enforces the *caller's* RBAC (never a confused
-  deputy). Extending that to every source needs an identity platform Columbo can
+  deputy). Extending that to every source needs an identity platform Dossier can
   exchange tokens with — an integration, not a wrapper.
 - **DNS-rebinding protection.** The SSRF guard is static: it blocks *literal*
   private IPs and metadata names but does not resolve DNS, so a public hostname
@@ -311,7 +311,7 @@ Two worth calling out:
 Deeper design notes live in [`docs/`](docs/index.md):
 
 - **Architecture** — [call tree](docs/call_tree.md), [request trace](docs/request_simulation.md), [libraries used](docs/libraries-used.md), [guardrails](docs/guardrails.md), [permalinks](docs/permalinks.md)
-- **Auth** — [auth from first principles](docs/auth-basics.md), [per-deployment auth flows](docs/columbo-auth-flow.md)
+- **Auth** — [auth from first principles](docs/auth-basics.md), [per-deployment auth flows](docs/dossier-auth-flow.md)
 - **Scaling & integration** — [MCP / A2A adoption](docs/mcp-a2a-adoption.md), [enterprise scale](docs/enterprise-solution.md), [CLI → microservice](docs/cli-to-microservice.md)
 
 These render as a browsable site via [MkDocs](https://www.mkdocs.org/) (Material theme):
@@ -329,7 +329,7 @@ Pushing to `main` auto-publishes to GitHub Pages via
 ## Project layout
 
 ```
-columbo_py/
+dossier/
 ├── cli/                 # Typer app: ask, interactive, devtools (compare/bench/smoke/demo)
 ├── config/              # defaults.toml (all tunable knobs) + typed loader (SETTINGS)
 ├── engine/
@@ -370,80 +370,80 @@ used, rather than failing at startup.
 |---|---|---|
 | Claude (required) | `ANTHROPIC_API_KEY` | Used by every route/plan/score/restitch/synthesize call. |
 | GitHub | `GITHUB_TOKEN` | Personal access token, `repo` + `read:org` scopes. Registered as two sources the planner picks between: `github_code` (file contents via code search) and `github_issues` (issues/PRs). |
-| Slack | `SLACK_CLIENT_ID` + `SLACK_CLIENT_SECRET` (native OAuth), or `SLACK_USER_TOKEN` (+ `SLACK_D_COOKIE` for an `xoxc-` token) | Preferred: register a Slack app with the `search:read` user scope and set the client id/secret — first run opens an OAuth consent screen and caches the `xoxp-` user token to `~/.columbo/slack_token.json` (like Drive). Alternatively paste a user token directly. If none are set, Columbo falls back to extracting an `xoxc-` token from an already-logged-in Slack tab in the shared browser profile. |
+| Slack | `SLACK_CLIENT_ID` + `SLACK_CLIENT_SECRET` (native OAuth), or `SLACK_USER_TOKEN` (+ `SLACK_D_COOKIE` for an `xoxc-` token) | Preferred: register a Slack app with the `search:read` user scope and set the client id/secret — first run opens an OAuth consent screen and caches the `xoxp-` user token to `~/.dossier/slack_token.json` (like Drive). Alternatively paste a user token directly. If none are set, Dossier falls back to extracting an `xoxc-` token from an already-logged-in Slack tab in the shared browser profile. |
 | Confluence | `CONFLUENCE_BASE_URL`, `CONFLUENCE_EMAIL`, `CONFLUENCE_API_TOKEN` | API token from `id.atlassian.com/manage-profile/security/api-tokens`. |
 | Jira | `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN` | Same Atlassian API token works for both. |
-| Google Drive | `GOOGLE_CLIENT_SECRETS_PATH` | OAuth client secrets JSON (Desktop app type) from the Google Cloud console; first run opens a browser consent screen and caches the refresh token to `~/.columbo/drive_token.json`. |
-| Testing Platform (MCP) | `COLUMBO_MCP_TESTING_URL`, `COLUMBO_MCP_TESTING_TOKEN` (optional) | Needs the `[mcp]` extra (`pip install ".[mcp]"`). When the URL is set, the planner can call the server's MCP **tools** directly via structured `tool_calls` — the relevant tools are selected per question from the catalog (so hundreds of tools never bloat the prompt), and each call's results become scored evidence. The token is sent as a per-user bearer so the platform enforces the caller's RBAC. (An alternative `MCPTestingPlatformSource` search-adapter also ships for the simpler single-tool style.) |
-| Dictionary | `COLUMBO_DICTIONARY_URL`, `COLUMBO_DICTIONARY_DOMAIN`, `COLUMBO_DICTIONARY_TOKEN` (optional) | Acronym lookup at `GET {url}/{abbreviation}/{domain}` (default `https://www.allacronyms.com/{abbreviation}/computing`). `COLUMBO_DICTIONARY_DOMAIN` (default `computing`) restricts results to one field so an acronym resolves to its computing sense; set it empty to query every field. Columbo auto-detects acronyms in the question and search results, resolves them here, and feeds the definitions into later plan prompts. The endpoint may return multiple senses per acronym (expansions, paragraphs, links) — all are kept (numbered, length-bounded) so the planner picks the one that fits. Point the URL at your own service; leave empty to disable. |
+| Google Drive | `GOOGLE_CLIENT_SECRETS_PATH` | OAuth client secrets JSON (Desktop app type) from the Google Cloud console; first run opens a browser consent screen and caches the refresh token to `~/.dossier/drive_token.json`. |
+| Testing Platform (MCP) | `DOSSIER_MCP_TESTING_URL`, `DOSSIER_MCP_TESTING_TOKEN` (optional) | Needs the `[mcp]` extra (`pip install ".[mcp]"`). When the URL is set, the planner can call the server's MCP **tools** directly via structured `tool_calls` — the relevant tools are selected per question from the catalog (so hundreds of tools never bloat the prompt), and each call's results become scored evidence. The token is sent as a per-user bearer so the platform enforces the caller's RBAC. (An alternative `MCPTestingPlatformSource` search-adapter also ships for the simpler single-tool style.) |
+| Dictionary | `DOSSIER_DICTIONARY_URL`, `DOSSIER_DICTIONARY_DOMAIN`, `DOSSIER_DICTIONARY_TOKEN` (optional) | Acronym lookup at `GET {url}/{abbreviation}/{domain}` (default `https://www.allacronyms.com/{abbreviation}/computing`). `DOSSIER_DICTIONARY_DOMAIN` (default `computing`) restricts results to one field so an acronym resolves to its computing sense; set it empty to query every field. Dossier auto-detects acronyms in the question and search results, resolves them here, and feeds the definitions into later plan prompts. The endpoint may return multiple senses per acronym (expansions, paragraphs, links) — all are kept (numbered, length-bounded) so the planner picks the one that fits. Point the URL at your own service; leave empty to disable. |
 
 ### Configuration (optional)
 
 Every tunable default — model tiers, cost pricing, loop/iteration caps,
 evidence-selection thresholds, plan-prompt numbers, cache TTLs, HTTP timeouts,
 source API endpoints, seed scrape-allow hosts — lives in one shipped file,
-[`columbo_py/config/defaults.toml`](columbo_py/config/defaults.toml), loaded
-through `columbo_py.config.SETTINGS`. Secrets/credentials are deliberately
+[`dossier/config/defaults.toml`](dossier/config/defaults.toml), loaded
+through `dossier.config.SETTINGS`. Secrets/credentials are deliberately
 **not** in that file; they stay in the env vars from the table above.
 
 Two ways to override the defaults, in increasing precedence:
 
-1. **A user TOML file.** Point `COLUMBO_CONFIG` at your own `.toml` containing
+1. **A user TOML file.** Point `DOSSIER_CONFIG` at your own `.toml` containing
    just the keys you want to change — it is deep-merged over the shipped
    defaults (everything you don't set keeps its default). e.g.
    ```toml
-   # my-columbo.toml
+   # my-dossier.toml
    [loop]
    max_iterations = 10
    max_cost_usd = 5.0
    ```
    ```bash
-   COLUMBO_CONFIG=~/my-columbo.toml columbo ask "..."
+   DOSSIER_CONFIG=~/my-dossier.toml dossier ask "..."
    ```
 2. **Environment variables** (below) win over both files, so the overrides
    documented here keep working unchanged.
 
 | Env var | Default | Purpose |
 |---|---|---|
-| `COLUMBO_CONFIG` | _(unset)_ | Path to a user TOML overriding any key in `defaults.toml` (deep-merged). |
-| `COLUMBO_CACHE_DIR` | `~/.columbo/cache` | Root for the four on-disk caches. `rm -rf` a namespace to bust just that layer, or use `columbo devtools clear-cache [namespace]`. |
-| `COLUMBO_SEARCH_TTL_S` | `21600` (6h) | Freshness TTL for cached search results. |
-| `COLUMBO_LOOKUP_TTL_S` | `86400` (24h) | Freshness TTL for cached lookups. |
-| `COLUMBO_SCRAPE_TTL_S` | `86400` (24h) | Freshness TTL for cached scraped pages. |
-| `COLUMBO_PRINCIPAL` | _(unset)_ | Authenticated caller id in a multi-user deployment; partitions every cache namespace per user so content can't leak across identities. Unset on the single-user CLI → shared cache. |
+| `DOSSIER_CONFIG` | _(unset)_ | Path to a user TOML overriding any key in `defaults.toml` (deep-merged). |
+| `DOSSIER_CACHE_DIR` | `~/.dossier/cache` | Root for the four on-disk caches. `rm -rf` a namespace to bust just that layer, or use `dossier devtools clear-cache [namespace]`. |
+| `DOSSIER_SEARCH_TTL_S` | `21600` (6h) | Freshness TTL for cached search results. |
+| `DOSSIER_LOOKUP_TTL_S` | `86400` (24h) | Freshness TTL for cached lookups. |
+| `DOSSIER_SCRAPE_TTL_S` | `86400` (24h) | Freshness TTL for cached scraped pages. |
+| `DOSSIER_PRINCIPAL` | _(unset)_ | Authenticated caller id in a multi-user deployment; partitions every cache namespace per user so content can't leak across identities. Unset on the single-user CLI → shared cache. |
 
 The `[guardrails]` block in `defaults.toml` tunes the safety guards (see
 [Guardrails](#guardrails)): `tool_allowlist` / `validate_tool_args` (MCP tool
 gate), `max_question_chars` (input filter), `redact_answers` (output guard), and
 `min_faithfulness` (the `devtools eval --check` CI floor).
 
-Scrape approvals persist to `~/.columbo/domains.json` (`{"allow": [...],
-"deny": [...]}`); edit or delete it to reset which domains Columbo may fetch.
+Scrape approvals persist to `~/.dossier/domains.json` (`{"allow": [...],
+"deny": [...]}`); edit or delete it to reset which domains Dossier may fetch.
 
 Run knobs (`--max-iterations`, `--max-cost-usd`, `--headless`) are flags on
-`columbo ask` / `columbo interactive`; the cost cap defaults to `$2.00` per run.
+`dossier ask` / `dossier interactive`; the cost cap defaults to `$2.00` per run.
 
 ## Usage
 
 ```bash
-columbo ask "How does our auth flow handle token refresh?"
-columbo desktop              # native desktop window (needs the [desktop] extra: pip install ".[desktop]")
-columbo ui                   # same chat UI in the browser (needs the [ui] extra: pip install ".[ui]")
-columbo interactive          # keeps one browser session + cache warm across questions
-columbo devtools smoke       # full pipeline sanity check - no credentials, no network
-columbo devtools plan "..."  # just the initial plan call (needs only ANTHROPIC_API_KEY)
-columbo devtools demo        # real pipeline against a canned question
-columbo devtools bench       # aggregate metrics across ~/.columbo/runs/*.jsonl
-columbo devtools compare RUN_A.jsonl RUN_B.jsonl
-columbo devtools clear-cache          # clear all four on-disk caches
-columbo devtools clear-cache search   # clear just one namespace
-columbo devtools eval                 # LLM-as-judge eval on the sample dataset (needs only ANTHROPIC_API_KEY)
-columbo devtools eval mine.jsonl      # ...on your own {question, answer, contexts} samples
+dossier ask "How does our auth flow handle token refresh?"
+dossier desktop              # native desktop window (needs the [desktop] extra: pip install ".[desktop]")
+dossier ui                   # same chat UI in the browser (needs the [ui] extra: pip install ".[ui]")
+dossier interactive          # keeps one browser session + cache warm across questions
+dossier devtools smoke       # full pipeline sanity check - no credentials, no network
+dossier devtools plan "..."  # just the initial plan call (needs only ANTHROPIC_API_KEY)
+dossier devtools demo        # real pipeline against a canned question
+dossier devtools bench       # aggregate metrics across ~/.dossier/runs/*.jsonl
+dossier devtools compare RUN_A.jsonl RUN_B.jsonl
+dossier devtools clear-cache          # clear all four on-disk caches
+dossier devtools clear-cache search   # clear just one namespace
+dossier devtools eval                 # LLM-as-judge eval on the sample dataset (needs only ANTHROPIC_API_KEY)
+dossier devtools eval mine.jsonl      # ...on your own {question, answer, contexts} samples
 ```
 
 ## Desktop app
 
-`columbo desktop` opens the chat UI in a **native OS window** (not a browser
+`dossier desktop` opens the chat UI in a **native OS window** (not a browser
 tab): it runs the Chainlit UI headless on a local port and displays it via
 [pywebview](https://pywebview.flowlib.org/) — the system WKWebView on macOS,
 Edge WebView2 on Windows, GTK/Qt WebKit on Linux. It reuses the engine
@@ -452,7 +452,7 @@ steps as the CLI).
 
 ```bash
 pip install ".[desktop]"     # pywebview + chainlit
-columbo desktop
+dossier desktop
 ```
 
 To ship a **literal double-click `.app`/`.exe`**, wrap the entrypoint with
@@ -460,10 +460,10 @@ PyInstaller (bundling Chainlit's frontend assets), e.g.:
 
 ```bash
 pip install pyinstaller
-pyinstaller --name Columbo --windowed \
+pyinstaller --name Dossier --windowed \
   --collect-all chainlit \
-  --add-data "columbo_py/ui/app.py:columbo_py/ui" \
-  -c "from columbo_py.ui.desktop import run; run()"   # or a 2-line launcher module
+  --add-data "dossier/ui/app.py:dossier/ui" \
+  -c "from dossier.ui.desktop import run; run()"   # or a 2-line launcher module
 ```
 
 The UI glue is deliberately split so the engine stays untouched:
@@ -474,13 +474,13 @@ browser+cache session), `ui/app.py` (the only Chainlit code), `ui/desktop.py`
 ## Evaluation
 
 Beyond the runtime **self**-confidence score (the agent grading its own work),
-Columbo ships a separate, offline **LLM-as-judge** harness — an *independent*
-grader for regression-testing prompt/model changes. It reuses Columbo's own
+Dossier ships a separate, offline **LLM-as-judge** harness — an *independent*
+grader for regression-testing prompt/model changes. It reuses Dossier's own
 Claude client and response cache (so re-runs are deterministic and free) rather
 than pulling in an external eval framework; there are no extra dependencies and
 nothing runs inside `ask`.
 
-`columbo devtools eval [samples.jsonl]` scores each sample on three
+`dossier devtools eval [samples.jsonl]` scores each sample on three
 reference-free metrics, each 0–1:
 
 - **faithfulness** — are the answer's claims grounded in the contexts? (the
@@ -499,11 +499,11 @@ the evidence contexts — one JSON object per line:
 Contexts may also be bare strings. An optional `"reference"` field is accepted
 for future label-based metrics (context-recall, answer-correctness). The judge
 model is configurable via `[models].judge` in
-[`config/defaults.toml`](columbo_py/config/defaults.toml) (default Sonnet) or
+[`config/defaults.toml`](dossier/config/defaults.toml) (default Sonnet) or
 the `--model` flag. A starter dataset ships at
-[`columbo_py/evals/sample_dataset.jsonl`](columbo_py/evals/sample_dataset.jsonl).
+[`dossier/evals/sample_dataset.jsonl`](dossier/evals/sample_dataset.jsonl).
 
-As a **regression gate**, `columbo devtools eval --check` exits non-zero when
+As a **regression gate**, `dossier devtools eval --check` exits non-zero when
 mean faithfulness falls below `[guardrails].min_faithfulness` — wire it into CI
 to catch a prompt/model change that quietly worsens grounding. Because it calls
 the judge model it needs `ANTHROPIC_API_KEY`, so it's an opt-in CI job, separate
@@ -512,12 +512,12 @@ from the hermetic, network-free `pytest` gate.
 ## Testing
 
 ```bash
-pytest columbo_py/tests    # all against MockLLMClient + in-memory fakes - no network
-ruff check columbo_py
-mypy columbo_py
+pytest dossier/tests    # all against MockLLMClient + in-memory fakes - no network
+ruff check dossier
+mypy dossier
 ```
 
-`columbo devtools smoke` is the fastest way to confirm the whole
+`dossier devtools smoke` is the fastest way to confirm the whole
 plan → execute → score → synthesize pipeline is wired correctly without any
 of the above credentials.
 
@@ -528,7 +528,7 @@ credentials on hand:
 
 - The orchestrator loop, evidence selection, caching, and event log are
   verified end-to-end against `MockLLMClient` and in-memory fake sources
-  (see `columbo_py/tests/` and `columbo devtools smoke`).
+  (see `dossier/tests/` and `dossier devtools smoke`).
 - The GitHub integration (`github_issues` / `github_code`) targets the real
   GitHub search APIs; query strings are passed through as the planner writes
   them, and result mapping is unit-tested against captured API payloads.
@@ -536,13 +536,13 @@ credentials on hand:
   against each service's real REST API and their auth flows are standard,
   well-documented patterns, but have not been exercised against a live
   workspace/instance - set the credentials above and run
-  `columbo ask "..."` to validate them against your own tenant.
+  `dossier ask "..."` to validate them against your own tenant.
 
 
 ## Is this agentic?
 
 
-**Yes, Columbo is agentic — but deliberately on the constrained end of the spectrum.** Here's the honest breakdown.
+**Yes, Dossier is agentic — but deliberately on the constrained end of the spectrum.** Here's the honest breakdown.
 
 ### What makes it agentic
 
@@ -555,21 +555,21 @@ credentials on hand:
 
 This is where the design is opinionated, and it's a feature:
 
-- **Bounded, never open-ended.** Every exit path is a named, logged reason — confidence reached, iteration cap, empty plan, or dollar budget. The spec explicitly rules out "runs until someone kills it." A fully autonomous agent would self-set its own budget; Columbo's is a hard ceiling.
+- **Bounded, never open-ended.** Every exit path is a named, logged reason — confidence reached, iteration cap, empty plan, or dollar budget. The spec explicitly rules out "runs until someone kills it." A fully autonomous agent would self-set its own budget; Dossier's is a hard ceiling.
 - **Human-in-the-loop at the risky edge.** Before scraping an unknown host, it stops and asks (the domain gate). It doesn't autonomously reach arbitrary destinations.
 - **No self-modification, no persistence of goals.** It doesn't rewrite its own prompts, spawn sub-agents, or carry goals across runs. One question → one bounded investigation → a cited answer.
 - **Constrained action space.** It picks *among* a fixed menu of actions (search/scrape/lookup) with a fixed set of sources. It can't invent new tools at runtime.
 
 ### The one-line verdict
 
-Columbo is an **agentic workflow / bounded research agent** — model-directed control flow with tool use and self-termination — rather than an *autonomous* agent. On the common "workflow ↔ agent" axis (Anthropic's own framing: workflows orchestrate LLMs through predefined paths; agents direct their own process), Columbo sits clearly on the agent side because the LLM drives the loop, but it's an agent on a short, auditable leash by design: cost-capped, human-gated for scraping, and deterministic on re-runs.
+Dossier is an **agentic workflow / bounded research agent** — model-directed control flow with tool use and self-termination — rather than an *autonomous* agent. On the common "workflow ↔ agent" axis (Anthropic's own framing: workflows orchestrate LLMs through predefined paths; agents direct their own process), Dossier sits clearly on the agent side because the LLM drives the loop, but it's an agent on a short, auditable leash by design: cost-capped, human-gated for scraping, and deterministic on re-runs.
 
 So if someone asks "is it agentic?" — yes. If they ask "is it an autonomous agent?" — no, and intentionally so, because the whole value proposition is a trustworthy, cost-bounded, reproducible investigator rather than a free-running one.
 
 
 ## Is there a need to use Google ADK(or LangGraph, or CrewAI, or AutoGen) to build such a tool?
 
-Short answer: **no, you don't need ADK (or LangGraph, or CrewAI, or AutoGen) to build Columbo — and for this particular tool, hand-rolling it was arguably the better call.** But that's a judgment, not an absolute. Here's the reasoning.
+Short answer: **no, you don't need ADK (or LangGraph, or CrewAI, or AutoGen) to build Dossier — and for this particular tool, hand-rolling it was arguably the better call.** But that's a judgment, not an absolute. Here's the reasoning.
 
 ### What ADK-style frameworks actually give you
 
@@ -581,19 +581,19 @@ Agent frameworks (Google ADK, LangGraph, LlamaIndex, CrewAI, etc.) bundle roughl
 4. **Multi-agent orchestration** — sub-agents, handoffs, routing.
 5. **Model & tracing plumbing** — provider adapters, retries, callbacks, eval hooks.
 
-The question is: how much of that does Columbo need, and how much does it already have better-fitted versions of?
+The question is: how much of that does Dossier need, and how much does it already have better-fitted versions of?
 
-### Why Columbo didn't need one
+### Why Dossier didn't need one
 
-- **The loop is the easy part.** Columbo's core is ~a `while` loop with a confidence check. That's 40 lines. A framework's loop abstraction saves you almost nothing here and *costs* you the ability to express Columbo's specific exit conditions cleanly (named/logged termination reasons, dollar-budget guard checked *before* each call, empty-plan detection). Those are precisely the "self-terminating, cost-bounded" guarantees in the spec — and they're easier to enforce in your own loop than to bend a framework's loop around.
+- **The loop is the easy part.** Dossier's core is ~a `while` loop with a confidence check. That's 40 lines. A framework's loop abstraction saves you almost nothing here and *costs* you the ability to express Dossier's specific exit conditions cleanly (named/logged termination reasons, dollar-budget guard checked *before* each call, empty-plan detection). Those are precisely the "self-terminating, cost-bounded" guarantees in the spec — and they're easier to enforce in your own loop than to bend a framework's loop around.
 
-- **"Tools" here aren't generic function-calling.** Columbo doesn't let the model call arbitrary tools; it plans a *batch* of typed actions (search/scrape/lookup) that then fan out concurrently via `asyncio.gather`, get scored by a cheap model, and filtered. That batch-plan-then-parallel-execute shape is unusual — most frameworks assume sequential single-tool calls per turn. You'd be fighting the abstraction.
+- **"Tools" here aren't generic function-calling.** Dossier doesn't let the model call arbitrary tools; it plans a *batch* of typed actions (search/scrape/lookup) that then fan out concurrently via `asyncio.gather`, get scored by a cheap model, and filtered. That batch-plan-then-parallel-execute shape is unusual — most frameworks assume sequential single-tool calls per turn. You'd be fighting the abstraction.
 
-- **The hard parts are domain-specific and framework-neutral.** The actual engineering value in Columbo is: per-source query guides (CQL/JQL/code qualifiers) injected into the prompt, four-dimension confidence rubrics, deterministic evidence sorting for byte-identical cache keys, the domain gate, native-syntax source adapters, cost tracking. **No framework ships any of that.** You'd write all of it yourself regardless.
+- **The hard parts are domain-specific and framework-neutral.** The actual engineering value in Dossier is: per-source query guides (CQL/JQL/code qualifiers) injected into the prompt, four-dimension confidence rubrics, deterministic evidence sorting for byte-identical cache keys, the domain gate, native-syntax source adapters, cost tracking. **No framework ships any of that.** You'd write all of it yourself regardless.
 
-- **Determinism is a first-class requirement, and frameworks fight it.** Columbo's whole caching story depends on identical (system, user, model) → identical prompt → cache hit. Frameworks inject their own prompt scaffolding, hidden reasoning steps, and non-deterministic orchestration that make byte-identical re-runs hard. Owning the prompt string end-to-end is a feature here, not tech debt.
+- **Determinism is a first-class requirement, and frameworks fight it.** Dossier's whole caching story depends on identical (system, user, model) → identical prompt → cache hit. Frameworks inject their own prompt scaffolding, hidden reasoning steps, and non-deterministic orchestration that make byte-identical re-runs hard. Owning the prompt string end-to-end is a feature here, not tech debt.
 
-- **It's single-agent.** The biggest reason to reach for ADK/CrewAI/AutoGen is multi-agent coordination — routers, sub-agents, handoffs. Columbo is one agent with tiered models (Sonnet/Haiku/Opus by cost). Model tiering is a one-liner, not an orchestration problem.
+- **It's single-agent.** The biggest reason to reach for ADK/CrewAI/AutoGen is multi-agent coordination — routers, sub-agents, handoffs. Dossier is one agent with tiered models (Sonnet/Haiku/Opus by cost). Model tiering is a one-liner, not an orchestration problem.
 
 ### When you *would* reach for ADK
 
@@ -605,10 +605,10 @@ To be fair — a framework earns its keep when:
 - **Team familiarity** — if everyone knows LangGraph, the shared vocabulary can outweigh the abstraction cost.
 - **Standardized tool interop (MCP, etc.)** — if you want to plug into a growing set of external tool servers, a framework that speaks those protocols saves integration work.
 
-### The honest verdict for Columbo
+### The honest verdict for Dossier
 
-The dependencies Columbo *did* pick are the right granularity: `httpx` (async I/O), `pydantic` (typed LLM JSON), `diskcache` (persistence), `structlog` (events), `jinja2` (prompts), Playwright (browser), the Anthropic SDK. Those are **libraries** — they do one thing well and get out of the way. An agent **framework** is a different bet: it wants to own your control flow. For a tool whose core requirements are *determinism, auditable termination, and cost bounds*, owning the control flow yourself is the point.
+The dependencies Dossier *did* pick are the right granularity: `httpx` (async I/O), `pydantic` (typed LLM JSON), `diskcache` (persistence), `structlog` (events), `jinja2` (prompts), Playwright (browser), the Anthropic SDK. Those are **libraries** — they do one thing well and get out of the way. An agent **framework** is a different bet: it wants to own your control flow. For a tool whose core requirements are *determinism, auditable termination, and cost bounds*, owning the control flow yourself is the point.
 
 So: a framework would have added a dependency, an abstraction to fight, and a determinism headache — in exchange for a `while` loop you can write in an afternoon. Rational to skip.
 
-The moment that calculus flips is **multi-agent**. If Columbo grows a supervisor dispatching specialized per-source sub-agents that hand off to each other, that's when the boilerplate of doing it by hand starts to exceed the cost of adopting ADK or LangGraph — and I'd revisit the decision then, not before.
+The moment that calculus flips is **multi-agent**. If Dossier grows a supervisor dispatching specialized per-source sub-agents that hand off to each other, that's when the boilerplate of doing it by hand starts to exceed the cost of adopting ADK or LangGraph — and I'd revisit the decision then, not before.

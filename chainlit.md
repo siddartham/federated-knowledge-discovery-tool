@@ -1,7 +1,7 @@
-# Columbo
+# Dossier
 
 Ask a question about your team's knowledge — spread across Slack, Confluence,
-GitHub, Jira, and Google Drive. Columbo searches the sources, scores the
+GitHub, Jira, and Google Drive. Dossier searches the sources, scores the
 evidence, and answers with inline citations back to where each fact came from.
 
 **Tips**

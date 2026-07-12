@@ -1,5 +1,5 @@
 <svg width="680" height="676" viewBox="0 0 680 676" role="img" xmlns="http://www.w3.org/2000/svg">
-<title>Columbo guardrail architecture: a guard at every trust boundary</title>
+<title>Dossier guardrail architecture: a guard at every trust boundary</title>
 <desc>The request pipeline runs down the left as gray stages: question, plan and route, execute fan-out, retrieved evidence, synthesize, answer. At each boundary a guard fires, shown on the right: teal guards already exist, amber guards are to be added. A cross-cutting band at the bottom lists cost and loop caps, the audit log, cache isolation, and evals.</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
 <style>

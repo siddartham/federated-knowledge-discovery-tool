@@ -1,19 +1,19 @@
-# server/app.py  — nothing in columbo_py/ changes
+# server/app.py  — nothing in dossier/ changes
 import httpx
 from fastapi import FastAPI
 from pydantic import BaseModel
-from columbo_py.engine.orchestrator import loop as orch
-from columbo_py.engine.llm.claude import ClaudeClient
-from columbo_py.engine.search.registry import Registry
-from columbo_py.infra.cache.store import CacheStore
-from columbo_py.infra.browser.fetcher import _html_to_text  # reuse the fallback parser
-from columbo_py.infra.events.emitter import EventEmitter
-from columbo_py.sources.github import GitHubCodeSource, GitHubIssuesSource
-from columbo_py.sources.slack import SlackSource
-from columbo_py.sources.confluence import ConfluenceSource
-from columbo_py.sources.jira import JiraSource
-from columbo_py.sources.drive import DriveSource
-from columbo_py.sources.dictionary import DictionaryClient
+from dossier.engine.orchestrator import loop as orch
+from dossier.engine.llm.claude import ClaudeClient
+from dossier.engine.search.registry import Registry
+from dossier.infra.cache.store import CacheStore
+from dossier.infra.browser.fetcher import _html_to_text  # reuse the fallback parser
+from dossier.infra.events.emitter import EventEmitter
+from dossier.sources.github import GitHubCodeSource, GitHubIssuesSource
+from dossier.sources.slack import SlackSource
+from dossier.sources.confluence import ConfluenceSource
+from dossier.sources.jira import JiraSource
+from dossier.sources.drive import DriveSource
+from dossier.sources.dictionary import DictionaryClient
 
 
 class HttpxFetcher:  # ← satisfies the Fetcher Protocol, no browser

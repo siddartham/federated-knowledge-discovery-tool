@@ -2,7 +2,7 @@
 #
 # A/B test ANY config change end-to-end. Runs each question in a list twice —
 # once with the default config (baseline), once with your override deep-merged in
-# via COLUMBO_CONFIG (treatment) — captures each run as an eval sample, then judges
+# via DOSSIER_CONFIG (treatment) — captures each run as an eval sample, then judges
 # both arms with the LLM-as-judge. Compare the two "Aggregate" blocks.
 #
 #   scripts/ab_config.sh <override.toml> <questions.txt>
@@ -19,7 +19,7 @@ set -euo pipefail
 
 OVERRIDE="${1:?usage: scripts/ab_config.sh <override.toml> <questions.txt>}"
 QUESTIONS="${2:?usage: scripts/ab_config.sh <override.toml> <questions.txt>}"
-CLI="python -m columbo_py.cli"
+CLI="python -m dossier.cli"
 WORK=".ab"
 mkdir -p "$WORK"
 : > "$WORK/samples-baseline.jsonl"
@@ -29,7 +29,7 @@ while IFS= read -r q || [ -n "$q" ]; do
   [ -z "${q// }" ] && continue
   echo ">> $q"
   $CLI ask "$q" --capture-eval "$WORK/samples-baseline.jsonl" >/dev/null
-  COLUMBO_CONFIG="$OVERRIDE" $CLI ask "$q" --capture-eval "$WORK/samples-override.jsonl" >/dev/null
+  DOSSIER_CONFIG="$OVERRIDE" $CLI ask "$q" --capture-eval "$WORK/samples-override.jsonl" >/dev/null
 done < "$QUESTIONS"
 
 echo

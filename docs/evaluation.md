@@ -1,14 +1,14 @@
 # Evaluation & validation
 
-How Columbo knows whether an answer is any good — a native **LLM-as-judge**
-harness (`columbo_py/evals/`, driven by `devtools eval`), and how it connects to
+How Dossier knows whether an answer is any good — a native **LLM-as-judge**
+harness (`dossier/evals/`, driven by `devtools eval`), and how it connects to
 the runtime scorers documented in [Scoring & confidence](scoring-and-confidence.md).
 
 ## First principles
 
 The problem is that a good enterprise answer is *open-ended* — there is no single
 correct string to compare against. That rules out exact-match / BLEU. Human
-evaluation is the gold standard but slow, costly, and not reproducible. So Columbo
+evaluation is the gold standard but slow, costly, and not reproducible. So Dossier
 uses an **LLM as the judge**:
 
 ![Scoring an answer with no answer key](images/evaluation/eval-first-principle.svg)
@@ -23,7 +23,7 @@ claim supported by *these contexts*?", which an LLM can do far more reliably tha
 ## Why an LLM judge — and what it doesn't need
 
 - **No labels.** The eval sample is a reference-free triple — `question`, the
-  `answer` Columbo produced, and the `contexts` it was grounded in. (An optional
+  `answer` Dossier produced, and the `contexts` it was grounded in. (An optional
   `reference` answer is carried for future label-based metrics but the three judges
   don't use it.) You can validate a run *without ever writing a correct answer*.
 - **Deterministic and free on re-run.** The judges call the same `LLMClient` as the
@@ -118,15 +118,15 @@ whether the scorer ranked the cited evidence highly.
 
 ```bash
 # grade the sample answers; --check turns it into a CI gate (fails below the floor)
-columbo devtools eval --check
+dossier devtools eval --check
 
 # score your own answers and hand the labels to the analyzer
-columbo devtools eval --out faithfulness.jsonl
-columbo devtools analyze ~/.columbo/runs --evals faithfulness.jsonl
+dossier devtools eval --out faithfulness.jsonl
+dossier devtools analyze ~/.dossier/runs --evals faithfulness.jsonl
 ```
 
 `devtools eval` reads a JSONL of `{question, answer, contexts[, reference]}`
-(`columbo_py/evals/sample_dataset.jsonl` by default), needs only `ANTHROPIC_API_KEY`
+(`dossier/evals/sample_dataset.jsonl` by default), needs only `ANTHROPIC_API_KEY`
 — no sources, no browser — and `--check` fails if mean faithfulness drops below
 `[guardrails].min_faithfulness`, so a prompt or model change that quietly worsens
 grounding is caught in CI.

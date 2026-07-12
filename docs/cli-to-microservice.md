@@ -84,7 +84,7 @@ No leak is possible, because you never substituted the service's identity — yo
 
 OBO hands you a **bearer token for an API**. Scraping a web UI needs a **browser cookie/session**, not a bearer token. So:
 
-- If a platform is a **token-addressable API** → OBO works beautifully, and you wouldn't *scrape* it at all — you'd add it as a proper Columbo *source* and call it as the user. Cleaner than scraping ever was.
+- If a platform is a **token-addressable API** → OBO works beautifully, and you wouldn't *scrape* it at all — you'd add it as a proper Dossier *source* and call it as the user. Cleaner than scraping ever was.
 - If a platform is **only a human web UI behind SSO, with no API** → OBO can't target it. To read it *as the user* you're back to driving an **authenticated browser carrying that user's session** — the per-user hosted browser. AD doesn't make cookie-scraping RBAC-correct; it only helps where an API/OAuth audience exists.
 
 So AD closes the gap exactly where there's an API, and not where there's only a login page.
@@ -130,9 +130,9 @@ And note this same trap applies to the **API sources too** (Confluence/Jira via 
 
 To read RBAC-gated platforms on a service *correctly*, the service must act **as the asking user**, not as itself:
 
-1. **Delegated per-user auth (best, if the platforms have APIs/OAuth).** User signs into the service via SSO; the service does an OAuth on-behalf-of / token-exchange to get a *per-user* token for each platform, and fetches as that user. RBAC is enforced by the platform itself — no leak possible. This is the enterprise-correct pattern. Cost: each platform needs an API/OAuth endpoint and you wire up token exchange. (Ideally you'd add these platforms as first-class Columbo *sources*, like Slack, and skip scraping entirely.)
-2. **Per-user authenticated browser (general, heavy).** The service runs a browser session *keyed to each logged-in user*, carrying *their* SSO session — essentially "Columbo desktop, hosted, one context per user." Preserves arbitrary auth-walled scraping with correct RBAC, but you're now custodian of users' live sessions (real security/ops burden) and it's memory-heavy (a browser per active user).
-3. **Cite, don't scrape (safe, degraded).** If you can't get per-user identity for a platform, the safe behavior is: **don't fetch it — surface the link with a note** ("relevant: <Governance Platform page> — behind SSO, open it yourself"). Columbo already has a "linkify sources" step, so this fits naturally. The answer is less complete, but it leaks nothing and stays honest.
+1. **Delegated per-user auth (best, if the platforms have APIs/OAuth).** User signs into the service via SSO; the service does an OAuth on-behalf-of / token-exchange to get a *per-user* token for each platform, and fetches as that user. RBAC is enforced by the platform itself — no leak possible. This is the enterprise-correct pattern. Cost: each platform needs an API/OAuth endpoint and you wire up token exchange. (Ideally you'd add these platforms as first-class Dossier *sources*, like Slack, and skip scraping entirely.)
+2. **Per-user authenticated browser (general, heavy).** The service runs a browser session *keyed to each logged-in user*, carrying *their* SSO session — essentially "Dossier desktop, hosted, one context per user." Preserves arbitrary auth-walled scraping with correct RBAC, but you're now custodian of users' live sessions (real security/ops burden) and it's memory-heavy (a browser per active user).
+3. **Cite, don't scrape (safe, degraded).** If you can't get per-user identity for a platform, the safe behavior is: **don't fetch it — surface the link with a note** ("relevant: <Governance Platform page> — behind SSO, open it yourself"). Dossier already has a "linkify sources" step, so this fits naturally. The answer is less complete, but it leaks nothing and stays honest.
 
 ### Bottom line
 
@@ -155,7 +155,7 @@ Confirmed the seams — and they're exactly what makes this clean. Three facts d
 2. `fetcher: Fetcher` is a **`@runtime_checkable` Protocol with one method** (`async def fetch(url) -> str`) — so you can inject *any* fetcher.
 3. `gate` and `dictionary` are **optional**, and crucially `_run_actions` guards with `if gate is not None and not await gate.allows(url)` — so `gate=None` fully disables the interactive `input()` prompt.
 
-## Verdict: yes — for a single-tenant service, with no edits to `columbo_py`
+## Verdict: yes — for a single-tenant service, with no edits to `dossier`
 
 The three things that would otherwise break on a server (browser, interactive prompt, OAuth) are all sidestepped by *injection*, not by changing the tool:
 
@@ -169,22 +169,22 @@ The three things that would otherwise break on a server (browser, interactive pr
 ## The whole wrapper (a new file — the tool is untouched)
 
 ```python
-# server/app.py  — nothing in columbo_py/ changes
+# server/app.py  — nothing in dossier/ changes
 import httpx
 from fastapi import FastAPI
 from pydantic import BaseModel
-from columbo_py.engine.orchestrator import loop as orch
-from columbo_py.engine.llm.claude import ClaudeClient
-from columbo_py.engine.search.registry import Registry
-from columbo_py.infra.cache.store import CacheStore
-from columbo_py.infra.browser.fetcher import _html_to_text     # reuse the fallback parser
-from columbo_py.infra.events.emitter import EventEmitter
-from columbo_py.sources.github import GitHubCodeSource, GitHubIssuesSource
-from columbo_py.sources.slack import SlackSource
-from columbo_py.sources.confluence import ConfluenceSource
-from columbo_py.sources.jira import JiraSource
-from columbo_py.sources.drive import DriveSource
-from columbo_py.sources.dictionary import DictionaryClient
+from dossier.engine.orchestrator import loop as orch
+from dossier.engine.llm.claude import ClaudeClient
+from dossier.engine.search.registry import Registry
+from dossier.infra.cache.store import CacheStore
+from dossier.infra.browser.fetcher import _html_to_text     # reuse the fallback parser
+from dossier.infra.events.emitter import EventEmitter
+from dossier.sources.github import GitHubCodeSource, GitHubIssuesSource
+from dossier.sources.slack import SlackSource
+from dossier.sources.confluence import ConfluenceSource
+from dossier.sources.jira import JiraSource
+from dossier.sources.drive import DriveSource
+from dossier.sources.dictionary import DictionaryClient
 
 class HttpxFetcher:                       # ← satisfies the Fetcher Protocol, no browser
     def __init__(self): self._c = httpx.AsyncClient(follow_redirects=True, timeout=20.0)
@@ -219,7 +219,7 @@ async def ask(req: Ask):
 
 ## Where it's genuinely *more* than a wrapper (so you don't get surprised)
 
-- **Multi-tenant / per-user auth.** The engine assumes one identity (env creds), so serving different users *as themselves* is still largely an authorization redesign rather than a wrapper. Two pieces have since landed, though: cache is partitioned per principal (`CacheStore(scope=COLUMBO_PRINCIPAL)`, so one user's cached content can't reach another), and the MCP source carries a per-user bearer token. Full per-user OBO across *every* source remains the open piece.
+- **Multi-tenant / per-user auth.** The engine assumes one identity (env creds), so serving different users *as themselves* is still largely an authorization redesign rather than a wrapper. Two pieces have since landed, though: cache is partitioned per principal (`CacheStore(scope=DOSSIER_PRINCIPAL)`, so one user's cached content can't reach another), and the MCP source carries a per-user bearer token. Full per-user OBO across *every* source remains the open piece.
 - **Long requests.** `run()` returns only when finished (tens of seconds to minutes with real sources). For production you'd want **SSE/streaming or a job queue** (submit → poll). The engine already emits structured events, so streaming progress is a matter of giving `EventEmitter` a sink you tap for SSE — wrapper-side work, still no engine change.
 - **Weaker scraping.** The httpx fetcher can't render JS/auth-walled pages the way Playwright does. If you truly need browser scraping under concurrency, you'd add a **browser-context pool** (real infra) — the persistent single-profile model doesn't fan out.
 - **No scrape cache with the plain httpx fetcher** (that lived in `WebFetcher`). Easy to add in the wrapper by wrapping `cache.scrape_cache` around `fetch`, or subclass — again, wrapper-side.
@@ -236,13 +236,13 @@ Right — and this is the real limitation my earlier answer glossed by saying "i
 
 ## Why `BrowserSession` doesn't translate to a server
 
-`BrowserSession.start()` uses `launch_persistent_context(user_data_dir=...)` ([session.py:35](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/infra/browser/session.py#L35)), and its own docstring states the constraint:
+`BrowserSession.start()` uses `launch_persistent_context(user_data_dir=...)` ([session.py:35](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/infra/browser/session.py#L35)), and its own docstring states the constraint:
 
 > *"Only one BrowserSession should be live per user_data_dir at a time (Chromium locks the profile directory); concurrent fetches share one session and get their own tab."*
 
 That model is built for **one desktop process, one human-logged-in profile**. Three concrete things break under a server:
 
-1. **Profile-dir lock → no multi-worker.** Chromium locks `~/.columbo/browser-profile`. `uvicorn --workers 4` means 4 processes all trying to open the same profile → lock error. You're pinned to a single process for the browser.
+1. **Profile-dir lock → no multi-worker.** Chromium locks `~/.dossier/browser-profile`. `uvicorn --workers 4` means 4 processes all trying to open the same profile → lock error. You're pinned to a single process for the browser.
 2. **Crash-recovery restarts the *shared* browser.** `WebFetcher._recover_and_retry` calls `session.stop()` then `session.start()` — it tears down and relaunches the entire context. In the CLI that's fine (one run at a time). On a server where concurrent requests share one session, **one request's browser crash yanks the browser out from under every other in-flight scrape**. That's the "messes with the flow" you're sensing — it's a genuine cross-request hazard.
 3. **No one is logged in server-side.** The persistent profile's whole point is carrying the user's Slack/Confluence/Jira SSO cookies so auth-walled pages render. A headless server profile is empty → those pages return login walls (which the skip-filter already drops). Plus `webbrowser.open`, the Slack `xoxc` token interception, and first-run OAuth consent all assume a human at a desktop.
 
@@ -269,7 +269,7 @@ So "reuse `BrowserSession` unchanged behind FastAPI" is **not** actually viable 
 
 A tiny single-worker deployment *can* run `BrowserSession(headless=True)` and serialize scrapes one-at-a-time, but that's a demo, not a service.
 
-Want me to write Option B — a `PooledBrowserFetcher` (shared headless browser + ephemeral contexts + semaphore) that satisfies the `Fetcher` Protocol — as a new module the FastAPI app can inject? It'd give you real browser scraping on the server without touching `columbo_py`.
+Want me to write Option B — a `PooledBrowserFetcher` (shared headless browser + ephemeral contexts + semaphore) that satisfies the `Fetcher` Protocol — as a new module the FastAPI app can inject? It'd give you real browser scraping on the server without touching `dossier`.
 
 
 >> Q: are there any merits to sticking to browser session for desktop version or can it be also changed?
@@ -279,18 +279,18 @@ Yes — and they're not incidental merits; the persistent-context `BrowserSessio
 
 ## The real merits (desktop)
 
-1. **Zero-provisioning auth via the user's *actual* logged-in sessions.** `launch_persistent_context(user_data_dir)` persists cookies/localStorage/SSO state in `~/.columbo/browser-profile`. A user already logged into Slack/Confluence/Jira/Google in that profile *stays* logged in — Columbo "never touches a password or a service-account token" ([session.py:1-8](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/infra/browser/session.py)). That's the spec's core constraint ("multi-source auth w/o provisioning tokens"), and the persistent profile is how it's delivered.
+1. **Zero-provisioning auth via the user's *actual* logged-in sessions.** `launch_persistent_context(user_data_dir)` persists cookies/localStorage/SSO state in `~/.dossier/browser-profile`. A user already logged into Slack/Confluence/Jira/Google in that profile *stays* logged in — Dossier "never touches a password or a service-account token" ([session.py:1-8](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/infra/browser/session.py)). That's the spec's core constraint ("multi-source auth w/o provisioning tokens"), and the persistent profile is how it's delivered.
 2. **Auth-walled / JS-rendered scraping actually works.** The whole reason `scrape` exists (vs. the source APIs) is content behind a rendered, authenticated page — an internal Confluence page behind SSO, a Google Doc. Only a browser carrying the user's real cookies can reach those. A headless, cookie-less browser cannot.
 3. **It's also the Slack fallback path.** The `xoxc` token interception reads the token off an already-logged-in Slack tab in that profile — impossible without a persistent, human-authenticated session.
 4. **Visible-by-default is a feature here.** `headless=False` lets the human complete first-time SSO/MFA login and OAuth consent (`webbrowser.open`) in the same profile. On desktop there's a person to satisfy those prompts.
-5. **Warm SSO across runs** — log in once ever, not per run; `columbo interactive` keeps the session hot.
+5. **Warm SSO across runs** — log in once ever, not per run; `dossier interactive` keeps the session hot.
 
 The punchline: the *exact* properties that make it wrong for a server — profile-dir lock (single instance), shared crash-recovery, needs-a-human — are precisely what's *right* for desktop (one user, one process, a human present). Desktop and server want opposite things, which is why the clean architecture is **one engine + a swappable `Fetcher`**: desktop injects the persistent `BrowserSession`, server injects httpx/pooled-headless. The Protocol seam already supports that; nothing about the desktop version needs to change to enable the server one.
 
 ## Could it be changed on desktop — and should it?
 
 - **Headless / ephemeral / API-only:** technically yes, but each erodes the differentiator. Headless breaks first-time interactive login; ephemeral contexts lose the logged-in cookies; API-only drops auth-walled scraping entirely. So changing the *strategy* is a net loss for desktop.
-- **One genuine improvement that preserves every merit — lazy browser launch.** Right now `_ask` opens Chromium unconditionally (`async with BrowserSession(...)` wraps the whole run, [main.py:81](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/cli/main.py#L81)), so *every* `columbo ask` pays the Chromium startup cost even when the planner never scrapes (many questions are answered from source APIs + no scrape). Deferring `session.start()` until the first `fetch()` would make scrape-free runs faster and lighter, with zero change to behavior when scraping *is* needed. That's the one change I'd actually consider for the desktop path.
+- **One genuine improvement that preserves every merit — lazy browser launch.** Right now `_ask` opens Chromium unconditionally (`async with BrowserSession(...)` wraps the whole run, [main.py:81](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/cli/main.py#L81)), so *every* `dossier ask` pays the Chromium startup cost even when the planner never scrapes (many questions are answered from source APIs + no scrape). Deferring `session.start()` until the first `fetch()` would make scrape-free runs faster and lighter, with zero change to behavior when scraping *is* needed. That's the one change I'd actually consider for the desktop path.
 
 So: **keep the persistent `BrowserSession` for desktop** — it's the mechanism, not a detail. The only worthwhile tweak is making its startup lazy. Want me to wire that lazy-launch (defer `start()` to first fetch, behind the existing `Fetcher`/session seam) with a test?
 

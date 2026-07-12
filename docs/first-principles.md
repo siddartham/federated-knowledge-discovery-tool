@@ -1,6 +1,6 @@
 # First principles
 
-Every part of Columbo is a design decision with a *why*. This page is the map:
+Every part of Dossier is a design decision with a *why*. This page is the map:
 each aspect of the system, the principle that governs it, and where it's explained
 in depth. It also **captures the principles that don't have a page of their own** —
 model tiering, self-termination, determinism, native queries, and output validation.
@@ -9,10 +9,10 @@ The recurring meta-principle underneath all of them: **take an open, fuzzy probl
 and turn it into a bounded, deterministic, self-checking pipeline — cheap where it
 can be, careful where it must be.**
 
-![Map of Columbo's governing principles](images/first-principles-map.svg)
+![Map of Dossier's governing principles](images/first-principles-map.svg)
 
 
-A one-page map: every aspect of Columbo → its governing principle → the doc that explains it, grouped into six clusters:
+A one-page map: every aspect of Dossier → its governing principle → the doc that explains it, grouped into six clusters:
 
 | Cluster | Principles | Home |
 |---|---|---|
@@ -59,7 +59,7 @@ A one-page map: every aspect of Columbo → its governing principle → the doc 
 
 - **Auth = authentication × authorization × delegation.** Who are you, what may you
   do, and may a service act as you. → [Auth from first principles](auth-basics.md)
-- **Match the auth flow to where the code runs and what it touches.** → [Per-deployment auth flows](columbo-auth-flow.md)
+- **Match the auth flow to where the code runs and what it touches.** → [Per-deployment auth flows](dossier-auth-flow.md)
 
 ## Retrieval & sources
 

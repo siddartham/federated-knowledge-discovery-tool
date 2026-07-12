@@ -1,6 +1,6 @@
 <svg width="680" height="312" viewBox="0 0 680 312" role="img" xmlns="http://www.w3.org/2000/svg">
 <title>Desktop app auth flow</title>
-<desc>The user is already SSO-logged-in in the browser profile; Columbo drives that browser to open a link, carrying the user's session cookie, so the platform enforces the user's RBAC and returns only content the user may see, which Columbo turns into a cited answer.</desc>
+<desc>The user is already SSO-logged-in in the browser profile; Dossier drives that browser to open a link, carrying the user's session cookie, so the platform enforces the user's RBAC and returns only content the user may see, which Dossier turns into a cited answer.</desc>
 <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#888780"/></marker></defs>
 <style>
 text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
@@ -35,7 +35,7 @@ text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,s
 <line x1="340" y1="70" x2="340" y2="296" stroke="#b4b2a9" stroke-width="1" stroke-dasharray="3 3"/>
 <line x1="560" y1="70" x2="560" y2="296" stroke="#b4b2a9" stroke-width="1" stroke-dasharray="3 3"/>
 <g class="c-gray"><rect x="50" y="36" width="140" height="32" rx="8"/><text class="t" x="120" y="56" text-anchor="middle">You (desktop)</text></g>
-<g class="c-purple"><rect x="270" y="36" width="140" height="32" rx="8"/><text class="t" x="340" y="56" text-anchor="middle">Columbo + browser</text></g>
+<g class="c-purple"><rect x="270" y="36" width="140" height="32" rx="8"/><text class="t" x="340" y="56" text-anchor="middle">Dossier + browser</text></g>
 <g class="c-teal"><rect x="490" y="36" width="140" height="32" rx="8"/><text class="t" x="560" y="56" text-anchor="middle">Platform (SSO+RBAC)</text></g>
 <g class="c-gray"><rect x="58" y="82" width="364" height="26" rx="8"/><text class="ts" x="240" y="99" text-anchor="middle">① already logged in — SSO session lives in browser profile</text></g>
 <line x1="340" y1="140" x2="560" y2="140" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>

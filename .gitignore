@@ -11,7 +11,7 @@ venv/
 credentials.json
 token.json
 browser-profile/
-.columbo/
+.dossier/
 dist/
 build/
 .idea

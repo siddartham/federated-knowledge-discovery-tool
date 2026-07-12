@@ -1,17 +1,17 @@
 ════════════════════════════════════════════════════════════════════════
- COLUMBO — question → cited answer
+ DOSSIER — question → cited answer
 ════════════════════════════════════════════════════════════════════════
 
 USER
- │  $ columbo ask "How does our auth flow handle token refresh?"
+ │  $ dossier ask "How does our auth flow handle token refresh?"
  ▼
 ┌───────────────────────────────────────────────────────────────────────┐
 │ CLI ENTRY  cli/main.py :: ask()  →  _ask()                            │
 │  • configure_logging()          structlog JSON → stderr               │
 │  • cache   = CacheStore()       4 namespaced diskcaches               │
-│  • emitter = EventEmitter(run_id, ~/.columbo/runs/<run>.jsonl)        │
+│  • emitter = EventEmitter(run_id, ~/.dossier/runs/<run>.jsonl)        │
 │  • gate    = DomainGate.load(domains.json, allow_seed=SEED_DOMAINS)   │
-│  • dict.   = DictionaryClient()   (lookup.com / COLUMBO_DICTIONARY_*) │
+│  • dict.   = DictionaryClient()   (lookup.com / DOSSIER_DICTIONARY_*) │
 │  • BrowserSession(persistent profile)  ─┐ async context               │
 │      fetcher  = WebFetcher(session,cache,emitter)                     │
 │      registry = _build_registry(...)  → github_code, github_issues,   │

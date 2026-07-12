@@ -1,4 +1,4 @@
-site_name: Columbo
+site_name: Dossier
 site_description: A CLI agent that answers enterprise questions across Slack, Confluence, GitHub, Jira, and Drive with cited answers.
 docs_dir: docs
 repo_url: https://github.com/siddartham/federated-knowledge-discovery-tool
@@ -63,7 +63,7 @@ nav:
       - Permalinks: permalinks.md
   - Auth:
       - Foundations: auth-basics.md
-      - Deployment flows: columbo-auth-flow.md
+      - Deployment flows: dossier-auth-flow.md
   - Scaling & integration:
       - MCP / A2A adoption: mcp-a2a-adoption.md
       - Enterprise scale: enterprise-solution.md

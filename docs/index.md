@@ -1,6 +1,6 @@
-# Columbo documentation
+# Dossier documentation
 
-Columbo is a command-line agent that answers questions across an enterprise
+Dossier is a command-line agent that answers questions across an enterprise
 knowledge base — Slack, Confluence, GitHub, Jira, and Google Drive. It runs a
 `(route →) plan → execute → score → synthesize` loop, scoring every piece of
 evidence and returning a cited answer, under the user's own credentials.
@@ -22,7 +22,7 @@ decision to the principle behind it.
 
 ## Auth
 - [Auth from first principles](auth-basics.md) — OAuth, SSO, IdP, OBO / token-exchange, RBAC / ACL, cookies vs. bearer tokens.
-- [Per-deployment auth flows](columbo-auth-flow.md) — the auth flow for each option (desktop, web service, delegated OBO, cite-don't-fetch).
+- [Per-deployment auth flows](dossier-auth-flow.md) — the auth flow for each option (desktop, web service, delegated OBO, cite-don't-fetch).
 
 ## Scaling & integration
 - [MCP / A2A adoption](mcp-a2a-adoption.md) — whether MCP or A2A are worth adopting here.

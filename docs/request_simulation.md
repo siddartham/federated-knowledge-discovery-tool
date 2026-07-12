@@ -10,7 +10,7 @@ The fastest way to understand a pipeline is to follow one input through it. The 
 
 The trace below is one question walked through that funnel, step by step.
 
-Grounded in the actual control flow ([loop.py:96‑152](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/loop.py#L96) + [actions.py:85‑99](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/actions.py#L85)), here's a full trace. Key thing to keep straight up front: **only three of the four "action" types are LLM calls.** Plan = Sonnet, Score/Restitch = Haiku, Synthesize = Opus. Searches, scrapes, and *lookups* (both acronym-dictionary enrichment and the planner's exact-id `lookups`) are **source/HTTP/browser calls, not LLM calls**. I'll mark every step so the distinction is explicit.
+Grounded in the actual control flow ([loop.py:96‑152](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/loop.py#L96) + [actions.py:85‑99](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/actions.py#L85)), here's a full trace. Key thing to keep straight up front: **only three of the four "action" types are LLM calls.** Plan = Sonnet, Score/Restitch = Haiku, Synthesize = Opus. Searches, scrapes, and *lookups* (both acronym-dictionary enrichment and the planner's exact-id `lookups`) are **source/HTTP/browser calls, not LLM calls**. I'll mark every step so the distinction is explicit.
 
 > Note: this trace assumes **no MCP tool provider** is configured. When one is (a Testing Platform, etc.), each iteration adds a fifth LLM call site — a cheap `route · Haiku` selection over the tool catalog *before* plan — and the planner may emit `tool_calls` whose results become scored evidence like any other batch. See [call_tree.md](call_tree.md) for the five-call version.
 
@@ -24,7 +24,7 @@ Legend: 🧠 = LLM call · 🔌 = source API · 🌐 = dictionary HTTP · 🖥�
 ---
 
 ## Pre‑loop — acronym enrichment (no LLM)
-`run()` calls `enrich_acronyms` **before** the first plan ([loop.py:90](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/loop.py#L90)):
+`run()` calls `enrich_acronyms` **before** the first plan ([loop.py:90](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/loop.py#L90)):
 
 - 🌐 `SSO` → `GET allacronyms.com/SSO/computing` → "Single Sign-On"
 - 🌐 `RBAC` → "Role-Based Access Control"
@@ -64,7 +64,7 @@ composite = (2+3+2+2)/52 = **0.173** < 0.8 → don't break, execute.
 - 🔌 lookup `#sso-support` → resolves channel id `C0123` (added to `state.lookups` as a citable Result)
 - 🌐 enrich_acronyms re‑runs on new result text → finds **`JWT`** → "JSON Web Token" (`dictionary_checked` now has 3; SSO/RBAC not re‑queried)
 
-**Execute — Phase 2 scoring (Haiku, parallel)** `_score_new_evidence`. One `score_batch` coroutine per batch, but each **short‑circuits if all ids already scored** ([actions.py:265](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/actions.py#L265)) — all 3 search batches + the lookup batch are new, so **4 real Haiku calls**:
+**Execute — Phase 2 scoring (Haiku, parallel)** `_score_new_evidence`. One `score_batch` coroutine per batch, but each **short‑circuits if all ids already scored** ([actions.py:265](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/actions.py#L265)) — all 3 search batches + the lookup batch are new, so **4 real Haiku calls**:
 
 - 🧠 CALL #2 — score slack batch (6 results) → e.g. direct_relevance/answer/context/quality per result
 - 🧠 CALL #3 — score confluence batch (3)
@@ -126,7 +126,7 @@ composite = (7+8+6+7)/52 = **0.538** < 0.8 → execute.
 - 🧠 CALL #7 — score jira batch (2)
 - 🧠 CALL #8 — score slack #sso-support batch (4)
 - 🧠 CALL #9 — score lookup batch (1 new Drive Result)
-- 🧠 CALL #10 — **restitch** scrape *token-lifecycle* ([actions.py:335](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/actions.py#L335)) → selects the passage on refresh‑token rotation + claim re‑issue
+- 🧠 CALL #10 — **restitch** scrape *token-lifecycle* ([actions.py:335](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/actions.py#L335)) → selects the passage on refresh‑token rotation + claim re‑issue
 - 🧠 CALL #11 — **restitch** scrape *refresh.go* → selects the function that re‑reads RBAC on refresh
 
 The Jira issue + the scraped doc passage now directly connect refresh ↔ mid‑session role change — the gap closes; cross‑source consistency jumps.
@@ -148,9 +148,9 @@ The Jira issue + the scraped doc passage now directly connect refresh ↔ mid‑
   "actions": {"searches": [], "scrapes": [], "lookups": []}
 }
 ```
-composite = (12+11+11+12)/52 = **0.885 ≥ 0.8** → `terminated_reason="confidence_reached"`, **break before executing** ([loop.py:106](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/loop.py#L106)).
+composite = (12+11+11+12)/52 = **0.885 ≥ 0.8** → `terminated_reason="confidence_reached"`, **break before executing** ([loop.py:106](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/loop.py#L106)).
 
-*Note: this plan call would have short‑circuited anyway via the empty‑actions guard ([loop.py:123](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/loop.py#L123)) — but confidence is checked first.*
+*Note: this plan call would have short‑circuited anyway via the empty‑actions guard ([loop.py:123](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/loop.py#L123)) — but confidence is checked first.*
 
 *Events: `iteration_start`, `llm_request/response ×1`, `iteration_complete(terminated=true)`.*
 

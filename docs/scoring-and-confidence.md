@@ -2,7 +2,7 @@
 
 ## First principles
 
-Columbo turns a fuzzy judgment into a number in exactly two places, and both use
+Dossier turns a fuzzy judgment into a number in exactly two places, and both use
 the same trick. One number answers **"are we done gathering?"** (the planner's
 confidence, which gates the loop); the other answers **"how good is this piece of
 evidence?"** (the Haiku scorer, which gates what reaches synthesis).
@@ -40,9 +40,9 @@ principles:
    evidence.
 
 That's why the two share most of the recipe:
-[`Confidence.composite`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/models.py#L32)
+[`Confidence.composite`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/models.py#L32)
 and
-[`ScoreResult.composite`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/models.py#L82)
+[`ScoreResult.composite`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/models.py#L82)
 share the decompose → grade → aggregate → threshold shape. What differs is the
 *question*, the *use*, and the *aggregation* — a plain mean for confidence, a
 relevance-gate for the scorer (see [Mean or multiplication?](#mean-or-multiplication-gate-prerequisites-average-contributors)).
@@ -174,7 +174,7 @@ item* is. Four dimensions, chosen to span an item's value:
 Splitting `direct_relevance` from `answer_potential` is the subtle one: it lets the
 scorer reward "on-topic but not the answer" as *context* rather than throw it away.
 The composite feeds
-[`select_evidence`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/state.py#L169),
+[`select_evidence`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/state.py#L169),
 which admits an item if it's in the **top 8** (`min_guarantee`), *or* if its mean
 dimension ≥ **~4/13** (`score_threshold`) and it fits the **50k-char budget**.
 
@@ -233,7 +233,7 @@ contributor** → average it.
   So the right shape is `composite = (direct_relevance / 13) × mean(the other three)` —
   a **gate on relevance, a mean over the rest**. A *pure* product would be wrong (it
   would kill a perfect answer that happens to have `context_value = 0`); the *pure*
-  mean is the soft spot (authoritative-but-off-topic sneaks in). **Columbo now uses
+  mean is the soft spot (authoritative-but-off-topic sneaks in). **Dossier now uses
   the gated form by default** — config `[evidence].relevance_gated = true`.
 - **Confidence keeps the mean.** Its four dimensions are closer to fungible, and the
   **0.8 cutoff already does the conjunctive work**: three maxed dims reach only
@@ -292,7 +292,7 @@ started letting real errors through.
 ## Validating the design, not just justifying it
 
 Everything above is *rationale* — a defensible story for choices made by judgment,
-not derived or measured. The claims are testable, though, against the runs Columbo
+not derived or measured. The claims are testable, though, against the runs Dossier
 already logs, and against the answer-quality signal from the
 [LLM-as-judge harness](evaluation.md). Three experiments would turn each claim into a number:
 
@@ -306,9 +306,9 @@ prerequisite — richer logging, no new data collection. A
 `--evals` file of `{question, faithfulness}`) and runs the three checks below:
 
 ```bash
-columbo devtools analyze ~/.columbo/runs                              # checks 1 & 2
-columbo devtools eval --out faithfulness.jsonl                        # produce the labels
-columbo devtools analyze ~/.columbo/runs --evals faithfulness.jsonl   # adds check 3 (calibration)
+dossier devtools analyze ~/.dossier/runs                              # checks 1 & 2
+dossier devtools eval --out faithfulness.jsonl                        # produce the labels
+dossier devtools analyze ~/.dossier/runs --evals faithfulness.jsonl   # adds check 3 (calibration)
 ```
 
 The correlation set spans all scored evidence — search/lookup results

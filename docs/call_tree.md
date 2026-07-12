@@ -1,4 +1,4 @@
-# Columbo call tree — question → answer
+# Dossier call tree — question → answer
 
 Full top‑down call tree, from CLI invocation to returned answer. Annotations:
 🧠 LLM · 🔌 source API · 🌐 dictionary HTTP · 🖥️ browser · 🧰 MCP tool · 💾 cache · ⇉ parallel `asyncio.gather` · 🔁 loop · `[opt]` only when an MCP server is configured.
@@ -12,7 +12,7 @@ A call tree is just the loop unrolled. Reading it well means spotting three thin
 With that lens, the full tree below reads as one loop with a handful of expensive LLM leaves.
 
 ```
-columbo ask "<question>"
+dossier ask "<question>"
 │
 └─ cli/main.py :: ask()                         # Typer command
    └─ _ask(question, headless, max_iterations, max_cost_usd)
@@ -21,7 +21,7 @@ columbo ask "<question>"
       ├─ EventEmitter(run_id, log_path)         # JSONL run log
       ├─ DomainGate.load(domains.json, seed)    # scrape allow/deny
       ├─ DictionaryClient()
-      ├─ _build_tool_provider(cache)            # [opt] COLUMBO_MCP_TESTING_URL set
+      ├─ _build_tool_provider(cache)            # [opt] DOSSIER_MCP_TESTING_URL set
       │  ├─ RemoteMCPClient(url, token).connect()          # 🧰 mcp SDK
       │  └─ MCPToolProvider({...}, cache)
       ├─ BrowserSession(...).__aenter__()       # 🖥️ persistent Playwright context

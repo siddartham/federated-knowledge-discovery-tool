@@ -1,6 +1,6 @@
-# Columbo guardrails
+# Dossier guardrails
 
-How Columbo keeps a retrieval agent that reads RBAC-walled content, scrapes URLs
+How Dossier keeps a retrieval agent that reads RBAC-walled content, scrapes URLs
 it finds, and calls tools with model-authored arguments from doing something it
 shouldn't. This is the build reference: the design principle, the flow, and a
 guard-by-guard breakdown of what fires where, what it costs, and how it fails.
@@ -32,10 +32,10 @@ governed by one rule: **fail-closed on safety** (block when unsure),
 
 A guard sits at **every trust boundary**, and each one is a **wrapper over an
 existing Protocol seam** (`ToolProvider`, `CacheStore`, `DomainGate`, the prompt
-renderer) rather than logic scattered through the loop. Columbo already
+renderer) rather than logic scattered through the loop. Dossier already
 dependency-injects those seams, so a guard is a drop-in wrapper the rest of the
 code never notices. All of them are toggled by one policy block — `[guardrails]`
-in [`config/defaults.toml`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/config/defaults.toml).
+in [`config/defaults.toml`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/config/defaults.toml).
 
 Two failure philosophies, picked per boundary:
 
@@ -94,7 +94,7 @@ ANSWER ──► user
 
 ┌ cross-cutting (span the whole pipeline) ──────────────────────────────────────┐
 │  cost + loop caps        CostTracker(max_cost_usd) · max_iterations · named exits │
-│  cache isolation         CacheStore(scope=COLUMBO_PRINCIPAL) → scopes/<hash>/     │
+│  cache isolation         CacheStore(scope=DOSSIER_PRINCIPAL) → scopes/<hash>/     │
 │  audit log               EventEmitter → one JSONL line per search/scrape/tool/LLM │
 │  regression gate         devtools eval --check → mean faithfulness ≥ floor        │
 └───────────────────────────────────────────────────────────────────────────────┘
@@ -104,16 +104,16 @@ ANSWER ──► user
 
 | # | Boundary | Guard | File | Config | On violation |
 |---|----------|-------|------|--------|--------------|
-| 1 | question in | input filter | [`loop.run`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/loop.py) · [`redaction.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/infra/redaction.py) | `max_question_chars` | reject (no LLM call); secrets redacted from log |
-| 2 | plan → tool | tool gate | [`GuardedToolProvider`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/sources/mcp/guarded.py) | `tool_allowlist`, `validate_tool_args` | `GuardrailViolation` → logged tool failure |
-| 3 | execute → scrape | SSRF guard | [`ssrf_reason`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/infra/domaingate/gate.py) | — (static) | drop URL, non-overridable |
-| 4 | content → LLM | injection isolation | [`_defuse`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/prompts/render.py) + templates | — | forged markers defused; content stays fenced |
-| 5 | synthesis out | output guard | [`_synthesize`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/loop.py) | `redact_answers` | secrets replaced with `«redacted»` |
-| 6 | data access | identity + domain gate | [`DomainGate`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/infra/domaingate/gate.py) | seed allow-list | domain: allow/deny/abort · OBO: partial |
-| 7 | runaway | cost + loop caps | [`CostTracker`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/engine/orchestrator/cost.py) | `[loop]` caps | loop exits with a named reason |
-| 8 | multi-tenant | cache isolation | [`CacheStore`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/infra/cache/store.py) | `COLUMBO_PRINCIPAL` | separate on-disk partition per principal |
-| 9 | audit | event log | [`EventEmitter`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/infra/events/emitter.py) | — | every action logged to JSONL |
-| 10 | regression | faithfulness gate | [`devtools eval`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/cli/devtools.py) | `min_faithfulness` | `--check` exits non-zero below floor |
+| 1 | question in | input filter | [`loop.run`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/loop.py) · [`redaction.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/infra/redaction.py) | `max_question_chars` | reject (no LLM call); secrets redacted from log |
+| 2 | plan → tool | tool gate | [`GuardedToolProvider`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/sources/mcp/guarded.py) | `tool_allowlist`, `validate_tool_args` | `GuardrailViolation` → logged tool failure |
+| 3 | execute → scrape | SSRF guard | [`ssrf_reason`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/infra/domaingate/gate.py) | — (static) | drop URL, non-overridable |
+| 4 | content → LLM | injection isolation | [`_defuse`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/prompts/render.py) + templates | — | forged markers defused; content stays fenced |
+| 5 | synthesis out | output guard | [`_synthesize`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/loop.py) | `redact_answers` | secrets replaced with `«redacted»` |
+| 6 | data access | identity + domain gate | [`DomainGate`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/infra/domaingate/gate.py) | seed allow-list | domain: allow/deny/abort · OBO: partial |
+| 7 | runaway | cost + loop caps | [`CostTracker`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/engine/orchestrator/cost.py) | `[loop]` caps | loop exits with a named reason |
+| 8 | multi-tenant | cache isolation | [`CacheStore`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/infra/cache/store.py) | `DOSSIER_PRINCIPAL` | separate on-disk partition per principal |
+| 9 | audit | event log | [`EventEmitter`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/infra/events/emitter.py) | — | every action logged to JSONL |
+| 10 | regression | faithfulness gate | [`devtools eval`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/cli/devtools.py) | `min_faithfulness` | `--check` exits non-zero below floor |
 
 ### 1 · Input filter
 
@@ -184,7 +184,7 @@ for single-user determinism, a leak risk multi-tenant (user A's cached content
 served to user B on a hash collision). With `CacheStore(scope=…)` set, all four
 namespaces nest under `scopes/<sha256(scope)[:16]>/` — a **physical partition**,
 so cross-identity sharing is impossible. The CLI passes no scope (shared root,
-unchanged); a hosted deployment sets `COLUMBO_PRINCIPAL` per authenticated
+unchanged); a hosted deployment sets `DOSSIER_PRINCIPAL` per authenticated
 request. The scope is hashed so a raw principal id never lands on disk as a
 directory name. Trade-off: cross-user cache sharing is sacrificed for isolation;
 determinism *within* a principal is preserved.
@@ -216,7 +216,7 @@ redact_answers     = true   # strip secrets that surface in the final answer
 min_faithfulness   = 0.6    # devtools eval --check floor
 ```
 
-`COLUMBO_PRINCIPAL` (env var) sets the cache-isolation scope in a multi-user
+`DOSSIER_PRINCIPAL` (env var) sets the cache-isolation scope in a multi-user
 deployment; unset on the single-user CLI.
 
 ## Out of scope
@@ -226,7 +226,7 @@ Two guards need infrastructure, not code in this repo:
 - **Per-user OBO / token-exchange across every source.** The MCP path already
   sends a per-user bearer so the downstream platform enforces the caller's RBAC
   (never a confused deputy). Extending that to all sources needs an identity
-  platform Columbo can exchange tokens with — an integration.
+  platform Dossier can exchange tokens with — an integration.
 - **DNS-rebinding protection.** The SSRF guard blocks *literal* private IPs and
   metadata names but does not resolve DNS, so a public hostname that resolves to
   a private IP is not caught here. That defense belongs at the socket layer of
@@ -246,9 +246,9 @@ The pattern is uniform, which is the point:
 
 ## Tests
 
-- [`test_guardrails.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/tests/test_guardrails.py) — tool gate: allowlist filtering, arg validation, disable switch.
-- [`test_cache_isolation.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/tests/test_cache_isolation.py) — per-principal partitioning; no-scope backward compat.
-- [`test_prompt_safety.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/tests/test_prompt_safety.py) — evidence fenced; forged markers defused.
-- [`test_ssrf.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/tests/test_ssrf.py) — private/loopback/metadata/scheme blocks; not overridable by allowlist.
-- [`test_redaction.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/tests/test_redaction.py) — secret patterns caught; ordinary text untouched.
-- [`test_input_output_guards.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/columbo_py/tests/test_input_output_guards.py) — oversized question rejected with no LLM call; secret in answer redacted end-to-end.
+- [`test_guardrails.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/tests/test_guardrails.py) — tool gate: allowlist filtering, arg validation, disable switch.
+- [`test_cache_isolation.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/tests/test_cache_isolation.py) — per-principal partitioning; no-scope backward compat.
+- [`test_prompt_safety.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/tests/test_prompt_safety.py) — evidence fenced; forged markers defused.
+- [`test_ssrf.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/tests/test_ssrf.py) — private/loopback/metadata/scheme blocks; not overridable by allowlist.
+- [`test_redaction.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/tests/test_redaction.py) — secret patterns caught; ordinary text untouched.
+- [`test_input_output_guards.py`](https://github.com/siddartham/federated-knowledge-discovery-tool/blob/main/dossier/tests/test_input_output_guards.py) — oversized question rejected with no LLM call; secret in answer redacted end-to-end.

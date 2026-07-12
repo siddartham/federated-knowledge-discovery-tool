@@ -1,5 +1,5 @@
 <svg width="680" height="640" viewBox="0 0 680 640" role="img" xmlns="http://www.w3.org/2000/svg">
-<title>Columbo call sequence from question to answer, including semantic tool routing</title>
+<title>Dossier call sequence from question to answer, including semantic tool routing</title>
 <desc>A UML-style sequence diagram with five lifelines: CLI/UI, loop.run orchestrator, Claude, sources/web, and MCP tools. Time flows downward. Inside the loop frame the orchestrator lists MCP tools, asks Claude to route to the top-K, then plans, executes a parallel fan-out, scores and restitches before the confidence gate; synthesis runs once on exit. Solid arrows are calls, dashed arrows are returns.</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
 <style>

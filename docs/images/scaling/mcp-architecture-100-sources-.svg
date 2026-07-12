@@ -1,6 +1,6 @@
 <svg width="680" height="300" viewBox="0 0 680 300" role="img" xmlns="http://www.w3.org/2000/svg">
-<title>Extending Columbo for a 100-tool MCP server via tool retrieval</title>
-<desc>The question drives a tool selector that ranks the 100 tool descriptions and returns a shortlist of five to fifteen. Only those tool schemas go into the plan prompt; the planner emits tool_calls; the MCP client invokes them with a per-user OBO token; results normalize to Columbo Result objects and flow into the existing score and synthesize pipeline.</desc>
+<title>Extending Dossier for a 100-tool MCP server via tool retrieval</title>
+<desc>The question drives a tool selector that ranks the 100 tool descriptions and returns a shortlist of five to fifteen. Only those tool schemas go into the plan prompt; the planner emits tool_calls; the MCP client invokes them with a per-user OBO token; results normalize to Dossier Result objects and flow into the existing score and synthesize pipeline.</desc>
 <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#888780"/></marker></defs>
 <style>
 text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}

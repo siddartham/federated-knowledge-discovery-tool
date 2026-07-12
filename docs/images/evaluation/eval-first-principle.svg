@@ -17,6 +17,6 @@ text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,s
 <g class="c-amber"><rect x="238" y="52" width="204" height="96" rx="8"/><text class="th" x="340" y="80" text-anchor="middle">human evaluation</text><text class="ts" x="340" y="104" text-anchor="middle">✓ gold standard, but</text><text class="ts" x="340" y="122" text-anchor="middle">✗ slow · costly · not reproducible</text></g>
 <g class="c-teal"><rect x="452" y="52" width="204" height="96" rx="8"/><text class="th" x="554" y="80" text-anchor="middle">LLM-as-judge  ✓</text><text class="ts" x="554" y="104" text-anchor="middle">cheap · reproducible ·</text><text class="ts" x="554" y="122" text-anchor="middle">reference-free (no answer key)</text></g>
 
-<text class="ts" x="340" y="182" text-anchor="middle">Columbo uses an LLM judge — it grades the answer's <tspan font-style="italic">grounding against the retrieved evidence</tspan>, not truth in general,</text>
+<text class="ts" x="340" y="182" text-anchor="middle">Dossier uses an LLM judge — it grades the answer's <tspan font-style="italic">grounding against the retrieved evidence</tspan>, not truth in general,</text>
 <text class="ts" x="340" y="200" text-anchor="middle">so it needs no ground-truth answer and doesn't lean on the judge's own (fallible) world knowledge.</text>
 </svg>

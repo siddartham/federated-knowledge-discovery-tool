@@ -34,7 +34,7 @@ recompute *both* composites — mean and gated — from **one** set of logs and 
 where the cited items rank. No re-run.
 
 ```bash
-columbo devtools analyze ~/.columbo/runs --compare-gate
+dossier devtools analyze ~/.dossier/runs --compare-gate
 ```
 
 It even infers which formula produced the logs (by matching the logged composite), so
@@ -54,8 +54,8 @@ judge both arms with the LLM-as-judge. The gate is a one-line config toggle
 scripts/ab_gate.sh questions.txt      # runs both arms, captures samples, judges each
 ```
 
-Under the hood, per question: `COLUMBO_CONFIG=mean.toml columbo ask … --capture-eval
-samples-mean.jsonl` (gate off), then `columbo ask … --capture-eval samples-gate.jsonl`
+Under the hood, per question: `DOSSIER_CONFIG=mean.toml dossier ask … --capture-eval
+samples-mean.jsonl` (gate off), then `dossier ask … --capture-eval samples-gate.jsonl`
 (gated default), then `devtools eval` on each. Compare the two aggregates.
 
 ## Hygiene that matters
@@ -148,7 +148,7 @@ meaningless.
 
 **Branch-based (prompts aren't config):** plan / score / synthesize / route rubrics,
 coverage rules, anchors. The most *frequent* quality lever and what the harness is
-really for — but A/B'd across **git branches**, not `COLUMBO_CONFIG`.
+really for — but A/B'd across **git branches**, not `DOSSIER_CONFIG`.
 
 **Don't A/B:** guardrails (safety is not a quality knob you optimize away) and
 determinism / caching (correctness). Injection-isolation you measure *once*; you don't

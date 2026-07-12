@@ -35,7 +35,7 @@ text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,s
 <line x1="340" y1="70" x2="340" y2="300" stroke="#b4b2a9" stroke-width="1" stroke-dasharray="3 3"/>
 <line x1="560" y1="70" x2="560" y2="300" stroke="#b4b2a9" stroke-width="1" stroke-dasharray="3 3"/>
 <g class="c-gray"><rect x="50" y="36" width="140" height="32" rx="8"/><text class="t" x="120" y="56" text-anchor="middle">User</text></g>
-<g class="c-purple"><rect x="270" y="36" width="140" height="32" rx="8"/><text class="t" x="340" y="56" text-anchor="middle">Service (Columbo)</text></g>
+<g class="c-purple"><rect x="270" y="36" width="140" height="32" rx="8"/><text class="t" x="340" y="56" text-anchor="middle">Service (Dossier)</text></g>
 <g class="c-teal"><rect x="490" y="36" width="140" height="32" rx="8"/><text class="t" x="560" y="56" text-anchor="middle">Web platform</text></g>
 <line x1="120" y1="100" x2="340" y2="100" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/><text class="ts" x="230" y="94" text-anchor="middle">① question</text>
 <g class="c-gray"><rect x="214" y="114" width="252" height="40" rx="8"/><text class="ts" x="340" y="131" text-anchor="middle">② APIs fetched AS you (Solution A);</text><text class="ts" x="340" y="146" text-anchor="middle">hit SSO web link with no API →</text></g>

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="620" height="540" viewBox="0 0 620 540" role="img" aria-label="Columbo loop: route, plan, execute, score, synthesize">
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="540" viewBox="0 0 620 540" role="img" aria-label="Dossier loop: route, plan, execute, score, synthesize">
   <defs>
     <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -6,7 +6,7 @@
   </defs>
   <rect x="0" y="0" width="620" height="540" fill="#ffffff"/>
   <g font-family="ui-sans-serif,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
-    <text x="310" y="28" text-anchor="middle" font-size="14" font-weight="600" fill="#2C2C2A">Columbo loop — route → plan → execute → score → synthesize</text>
+    <text x="310" y="28" text-anchor="middle" font-size="14" font-weight="600" fill="#2C2C2A">Dossier loop — route → plan → execute → score → synthesize</text>
 
     <rect x="210" y="44" width="200" height="34" rx="6" fill="#F1EFE8" stroke="#B4B2A9"/>
     <text x="310" y="66" text-anchor="middle" font-size="13" font-weight="600" fill="#444441">question</text>
