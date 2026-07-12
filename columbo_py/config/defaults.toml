@@ -35,8 +35,27 @@ max_tokens = 8192              # max output tokens per LLM call
 
 [loop]
 confidence_cutoff = 0.8  # normalized confidence (0..1) that ends the loop
-max_iterations = 6       # hard cap on plan/execute/score iterations
+max_iterations = 3       # hard cap on plan/execute/score iterations
 max_cost_usd = 2.0       # dollar budget across all LLM calls in one run
+
+[guardrails]
+# Tool-call guardrails for MCP tools (applied when an MCP server is configured).
+# tool_allowlist: names of the ONLY tools exposed to the planner and callable -
+#   an empty list means "allow every tool the server advertises". Keep this to
+#   read-only tools; anything side-effecting (deploy/delete/promote) should be
+#   omitted so an answering agent can never trigger it.
+# validate_tool_args: check each call's arguments against the tool's input
+#   schema (required keys present, no unexpected keys) before dispatch.
+tool_allowlist = []
+validate_tool_args = true
+# Input filter: reject a question longer than this before spending any LLM call
+# (a cost / abuse guard); secrets in the question are redacted from the run log.
+max_question_chars = 4000
+# Output guard: redact secrets (keys/tokens) that surface in evidence from the
+# final answer before it reaches the user.
+redact_answers = true
+# Eval gate: `devtools eval --check` fails when mean faithfulness falls below this.
+min_faithfulness = 0.6
 
 [evidence]
 # Admit a scored result into the synthesis prompt if its composite score
@@ -44,12 +63,16 @@ max_cost_usd = 2.0       # dollar budget across all LLM calls in one run
 score_threshold_points = 4
 min_guarantee = 8    # always include the top-N regardless of the threshold
 char_budget = 50000  # token-equivalent cap on total evidence content
+# Gate the evidence composite on direct_relevance: when true, an off-topic result
+# scores near zero no matter how authoritative (relevance is a prerequisite, not a
+# term). When false, the composite is the equal-weighted mean of all four dims.
+relevance_gated = true
 
 [plan]
 # Numeric knobs injected into the plan prompt (orchestrate.j2).
-max_searches = 5
-max_scrapes = 5
-max_lookups = 5
+max_searches = 10
+max_scrapes = 10
+max_lookups = 10
 min_source_types = 2  # spread searches across at least this many sources
 # Confidence-rubric anchor points as fractions of the max score. Chosen to
 # reproduce the calibrated 0/4/7/10/13 gradations at max_score = 13.

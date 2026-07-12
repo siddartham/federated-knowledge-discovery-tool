@@ -95,7 +95,7 @@ async def test_execute_actions_search_and_score(cache: CacheStore, emitter: Even
 
     state = State(question="what is x?")
     llm = MockLLMClient(
-        [json.dumps([{"source": "1", "relevance": 13, "answer_potential": 8, "context_value": 5, "source_quality": 8}])]
+        [json.dumps([{"source": "1", "direct_relevance": 13, "answer_potential": 8, "context_value": 5, "source_quality": 8}])]
     )
     actions = Actions(searches=[SearchAction(source="github", query="x")])
 
@@ -117,7 +117,7 @@ async def test_execute_actions_records_score_cost(
     registry.register(_FakeSource("github", [Result(source="github", id="1", title="T", content="C")]))
     state = State(question="q")
     llm = MockLLMClient(
-        [json.dumps([{"source": "1", "relevance": 8, "answer_potential": 8, "context_value": 8, "source_quality": 8}])]
+        [json.dumps([{"source": "1", "direct_relevance": 8, "answer_potential": 8, "context_value": 8, "source_quality": 8}])]
     )
     actions = Actions(searches=[SearchAction(source="github", query="x")])
     cost = CostTracker(max_cost_usd=2.0)
@@ -147,8 +147,8 @@ async def test_execute_actions_score_out_of_range_does_not_crash(
         [
             json.dumps(
                 [
-                    {"source": "1", "relevance": 47, "answer_potential": 8, "context_value": 5, "source_quality": 8},
-                    {"source": "2", "relevance": 8, "answer_potential": 8, "context_value": 5, "source_quality": 8},
+                    {"source": "1", "direct_relevance": 47, "answer_potential": 8, "context_value": 5, "source_quality": 8},
+                    {"source": "2", "direct_relevance": 8, "answer_potential": 8, "context_value": 5, "source_quality": 8},
                 ]
             )
         ]
@@ -171,7 +171,7 @@ async def test_execute_actions_score_json_in_code_fence(
     registry.register(_FakeSource("github", [Result(source="github", id="1", title="T", content="C")]))
     state = State(question="q")
     fenced = "```json\n" + json.dumps(
-        [{"source": "1", "relevance": 8, "answer_potential": 8, "context_value": 8, "source_quality": 8}]
+        [{"source": "1", "direct_relevance": 8, "answer_potential": 8, "context_value": 8, "source_quality": 8}]
     ) + "\n```"
     llm = MockLLMClient([fenced])
     actions = Actions(searches=[SearchAction(source="github", query="x")])
@@ -276,7 +276,7 @@ async def test_execute_actions_lookup(cache: CacheStore, emitter: EventEmitter) 
     # One scored response for the lookup hit (lookups are now scored like
     # search results so they can reach synthesis).
     llm = MockLLMClient(
-        [json.dumps([{"source": "ENG-1", "relevance": 13, "answer_potential": 13, "context_value": 8, "source_quality": 8}])]
+        [json.dumps([{"source": "ENG-1", "direct_relevance": 13, "answer_potential": 13, "context_value": 8, "source_quality": 8}])]
     )
     actions = Actions(lookups=["ENG-1"])
 

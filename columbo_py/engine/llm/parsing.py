@@ -12,6 +12,10 @@ import re
 from typing import Any
 
 _FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.MULTILINE)
+# A trailing comma before a closing } or ] is the single most common way an LLM
+# produces "almost-JSON" (e.g. `[1, 2,]` or `{"a": 1,}`); strip those as a
+# cheap repair pass. `json` itself rejects them.
+_TRAILING_COMMA_RE = re.compile(r",(\s*[}\]])")
 
 
 def extract_json(text: str) -> Any:
@@ -22,6 +26,7 @@ def extract_json(text: str) -> Any:
     3. Brace/bracket-scanning for the first complete top-level JSON value
        anywhere in the text (handles chatty preamble like "Sure, here you
        go:" before the JSON starts).
+    4. Each of the above with trailing commas before `}`/`]` removed.
 
     Raises the last `json.JSONDecodeError` if nothing parses.
     """
@@ -56,6 +61,10 @@ def extract_json(text: str) -> Any:
                     if depth == 0:
                         candidates.append(stripped[start : i + 1])
                         break
+
+    # Add a trailing-comma-repaired variant of each candidate as a fallback.
+    repaired = [_TRAILING_COMMA_RE.sub(r"\1", c) for c in candidates]
+    candidates.extend(r for r in repaired if r not in candidates)
 
     last_error: json.JSONDecodeError | None = None
     for candidate in candidates:

@@ -84,7 +84,7 @@ async def test_enrichment_resolves_acronyms_from_question_and_results(
     state = State(question="How does SSO work?")
     # One scored response for the single search result.
     llm = MockLLMClient(
-        [json.dumps([{"source": "1", "relevance": 8, "answer_potential": 8, "context_value": 8, "source_quality": 8}])]
+        [json.dumps([{"source": "1", "direct_relevance": 8, "answer_potential": 8, "context_value": 8, "source_quality": 8}])]
     )
     actions = Actions(searches=[SearchAction(source="src", query="q")])
     dictionary = _FakeDictionary(

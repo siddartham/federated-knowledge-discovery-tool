@@ -56,10 +56,20 @@ class LoopConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class GuardrailsConfig:
+    tool_allowlist: tuple[str, ...]
+    validate_tool_args: bool
+    max_question_chars: int
+    redact_answers: bool
+    min_faithfulness: float
+
+
+@dataclass(frozen=True, slots=True)
 class EvidenceConfig:
     score_threshold_points: int
     min_guarantee: int
     char_budget: int
+    relevance_gated: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -151,6 +161,7 @@ class Settings:
     models: ModelsConfig
     cost: CostConfig
     loop: LoopConfig
+    guardrails: GuardrailsConfig
     evidence: EvidenceConfig
     plan: PlanNumbers
     actions: ActionsConfig
@@ -214,6 +225,7 @@ def _build(data: dict[str, Any]) -> Settings:
     models = data["models"]
     cost = data["cost"]
     loop = data["loop"]
+    guardrails = data["guardrails"]
     evidence = data["evidence"]
     plan = data["plan"]
     actions = data["actions"]
@@ -245,10 +257,18 @@ def _build(data: dict[str, Any]) -> Settings:
             max_iterations=int(loop["max_iterations"]),
             max_cost_usd=float(loop["max_cost_usd"]),
         ),
+        guardrails=GuardrailsConfig(
+            tool_allowlist=tuple(guardrails["tool_allowlist"]),
+            validate_tool_args=bool(guardrails["validate_tool_args"]),
+            max_question_chars=int(guardrails["max_question_chars"]),
+            redact_answers=bool(guardrails["redact_answers"]),
+            min_faithfulness=float(guardrails["min_faithfulness"]),
+        ),
         evidence=EvidenceConfig(
             score_threshold_points=int(evidence["score_threshold_points"]),
             min_guarantee=int(evidence["min_guarantee"]),
             char_budget=int(evidence["char_budget"]),
+            relevance_gated=bool(evidence["relevance_gated"]),
         ),
         plan=PlanNumbers(
             max_searches=int(plan["max_searches"]),

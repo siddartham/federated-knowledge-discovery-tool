@@ -53,7 +53,7 @@ def _plan(confidence: int, with_search: bool) -> str:
 
 
 _SCORE = json.dumps(
-    [{"source": "1", "relevance": 13, "answer_potential": 13, "context_value": 13, "source_quality": 13}]
+    [{"source": "1", "direct_relevance": 13, "answer_potential": 13, "context_value": 13, "source_quality": 13}]
 )
 _SYNTH = json.dumps({"answer": "the answer [demo:1]", "citations": [{"source": "demo", "id": "1"}]})
 
@@ -159,3 +159,45 @@ async def test_loop_result_includes_synthesized_answer(cache: CacheStore, emitte
 
     assert result.answer == "the answer [demo:1]"
     assert result.citations == [{"source": "demo", "id": "1", "permalink": None}]
+
+
+async def test_generate_validated_reprompts_on_malformed_json() -> None:
+    import pytest
+    from pydantic import BaseModel
+
+    from columbo_py.engine.orchestrator.cost import CostTracker
+
+    class _M(BaseModel):
+        x: int
+
+    # First reply reproduces the reported "Expecting ':' delimiter" break; the
+    # helper reprompts and the second (valid) reply parses.
+    llm = MockLLMClient(['{"x" 5}', '{"x": 5}'])
+    result = await orchestrator_loop._generate_validated(
+        llm, _M, system_prompt="s", user_prompt="u",
+        model="claude-haiku-4-5", request_type="test",
+        cost=CostTracker(1.0), emitter=EventEmitter("t"),
+    )
+    assert result.x == 5
+    assert len(llm.calls) == 2
+    assert llm.calls[1]["prompt"] != llm.calls[0]["prompt"]  # reprompt differs
+
+    # A shape that parses but fails validation also triggers a reprompt.
+    llm2 = MockLLMClient(['{"x": "nope"}', '{"x": 7}'])
+    result2 = await orchestrator_loop._generate_validated(
+        llm2, _M, system_prompt="s", user_prompt="u",
+        model="claude-haiku-4-5", request_type="test",
+        cost=CostTracker(1.0), emitter=EventEmitter("t"),
+    )
+    assert result2.x == 7
+    assert len(llm2.calls) == 2
+
+    # If it never recovers, the original error propagates (after the retry).
+    llm3 = MockLLMClient(["{broken", "still broken"])
+    with pytest.raises(json.JSONDecodeError):
+        await orchestrator_loop._generate_validated(
+            llm3, _M, system_prompt="s", user_prompt="u",
+            model="claude-haiku-4-5", request_type="test",
+            cost=CostTracker(1.0), emitter=EventEmitter("t"),
+        )
+    assert len(llm3.calls) == 2

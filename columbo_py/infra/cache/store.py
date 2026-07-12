@@ -63,9 +63,19 @@ CACHE_NAMESPACES = ("response", "search", "lookup", "scrape")
 
 
 class CacheStore:
-    def __init__(self, root: Path | None = None) -> None:
+    def __init__(self, root: Path | None = None, *, scope: str | None = None) -> None:
         root = root or DEFAULT_CACHE_ROOT
+        if scope:
+            # Multi-tenant guardrail: partition every namespace under a
+            # per-principal subdir so one user's cached search/scrape/lookup/tool
+            # CONTENT can never be served to another user who issues an identical
+            # query. Single-user CLI passes no scope -> the shared root, exactly
+            # as before. Hashed so a raw principal id (e.g. an email) is never
+            # written to disk as a directory name.
+            root = root / "scopes" / hashlib.sha256(scope.encode()).hexdigest()[:16]
         root.mkdir(parents=True, exist_ok=True)
+        self.scope = scope
+        self.root = root
         self.response_cache = diskcache.Cache(str(root / "response"))
         self.search_cache = diskcache.Cache(str(root / "search"))
         self.lookup_cache = diskcache.Cache(str(root / "lookup"))

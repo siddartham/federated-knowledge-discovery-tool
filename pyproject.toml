@@ -25,6 +25,19 @@ dev = [
     "pytest>=8.2",
     "pytest-asyncio>=0.23",
 ]
+ui = [
+    "chainlit>=1.1",
+]
+desktop = [
+    "chainlit>=1.1",
+    "pywebview>=5.0",
+]
+mcp = [
+    "mcp>=1.0",
+]
+docs = [
+    "mkdocs-material>=9.5",
+]
 
 [project.scripts]
 columbo = "columbo_py.cli.main:app"
@@ -43,6 +56,7 @@ include = ["columbo_py*"]
 "columbo_py.sources.confluence" = ["*.md"]
 "columbo_py.sources.jira" = ["*.md"]
 "columbo_py.sources.drive" = ["*.md"]
+"columbo_py.sources.mcp" = ["*.md"]
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]
@@ -53,14 +67,26 @@ line-length = 100
 target-version = "py311"
 
 [tool.mypy]
-python_version = "3.11"
+# Matches the dev/CI interpreter (3.12). 3.11-syntax compatibility (the project's
+# requires-python floor) is enforced by ruff's target-version = "py311" instead;
+# pinning mypy to 3.11 here only broke on incidental deps' 3.12-syntax stubs
+# (numpy via pandas) that we never import.
+python_version = "3.12"
 strict = true
 
 # Third-party deps that ship no type stubs / py.typed marker. Under strict
 # mode these otherwise surface as import-untyped errors on every run.
 [[tool.mypy.overrides]]
-module = ["diskcache.*", "google_auth_oauthlib.*"]
+module = ["diskcache.*", "google_auth_oauthlib.*", "chainlit.*", "webview.*", "mcp.*"]
 ignore_missing_imports = true
+
+# The Chainlit entrypoint decorates handlers with Chainlit's (untyped-to-us)
+# decorators; that's inherent to the framework and only affects this one shim.
+[[tool.mypy.overrides]]
+module = "columbo_py.ui.app"
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+warn_return_any = false
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

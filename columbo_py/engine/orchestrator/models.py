@@ -9,10 +9,37 @@ becoming 0.
 
 from __future__ import annotations
 
+from typing import Any
+
 from pydantic import BaseModel, Field
+
+from columbo_py.config import SETTINGS
 
 SCORE_SCALE = (0, 1, 2, 3, 5, 8, 13)
 MAX_SCORE = 13
+
+
+def scored_composite(
+    direct_relevance: int,
+    answer_potential: int,
+    context_value: int,
+    source_quality: int,
+    *,
+    gated: bool,
+) -> float:
+    """Evidence composite in [0, 1] for a search result or restitched scrape span.
+
+    `gated=True` treats `direct_relevance` as a **prerequisite**, not a term: it
+    multiplies the mean of the other three, so an off-topic item scores near zero no
+    matter how authoritative. `gated=False` is the plain equal-weighted mean of all
+    four. Relevance is the one dimension a high score on the others should not redeem;
+    the other three are fungible (background vs. answer vs. quality), so they average.
+    See docs/scoring-and-confidence.md ("Mean or multiplication?").
+    """
+    if gated:
+        rest = (answer_potential + context_value + source_quality) / (3 * MAX_SCORE)
+        return (direct_relevance / MAX_SCORE) * rest
+    return (direct_relevance + answer_potential + context_value + source_quality) / (4 * MAX_SCORE)
 
 
 class Confidence(BaseModel):
@@ -44,10 +71,19 @@ class SearchAction(BaseModel):
     query: str
 
 
+class ToolCall(BaseModel):
+    """A structured call to an MCP tool: a tool name + arguments matching that
+    tool's input schema (as advertised to the planner)."""
+
+    name: str
+    arguments: dict[str, Any] = Field(default_factory=dict)
+
+
 class Actions(BaseModel):
     searches: list[SearchAction] = Field(default_factory=list)
     scrapes: list[str] = Field(default_factory=list)
     lookups: list[str] = Field(default_factory=list)
+    tool_calls: list[ToolCall] = Field(default_factory=list)
 
 
 class OrchestrationResponse(BaseModel):
@@ -63,16 +99,20 @@ class ScoreResult(BaseModel):
     """LLM #2 (score, cheap model e.g. Haiku) output: one per raw search result."""
 
     source: str
-    relevance: int = Field(ge=0, le=MAX_SCORE)
+    direct_relevance: int = Field(ge=0, le=MAX_SCORE)
     answer_potential: int = Field(ge=0, le=MAX_SCORE)
     context_value: int = Field(ge=0, le=MAX_SCORE)
     source_quality: int = Field(ge=0, le=MAX_SCORE)
 
     @property
     def composite(self) -> float:
-        return (
-            self.relevance + self.answer_potential + self.context_value + self.source_quality
-        ) / (4 * MAX_SCORE)
+        return scored_composite(
+            self.direct_relevance,
+            self.answer_potential,
+            self.context_value,
+            self.source_quality,
+            gated=SETTINGS.evidence.relevance_gated,
+        )
 
 
 class RestitchResult(BaseModel):
@@ -88,12 +128,13 @@ class RestitchResult(BaseModel):
 
     @property
     def composite(self) -> float:
-        return (
-            self.direct_relevance
-            + self.answer_potential
-            + self.context_value
-            + self.source_quality
-        ) / (4 * MAX_SCORE)
+        return scored_composite(
+            self.direct_relevance,
+            self.answer_potential,
+            self.context_value,
+            self.source_quality,
+            gated=SETTINGS.evidence.relevance_gated,
+        )
 
 
 class Citation(BaseModel):

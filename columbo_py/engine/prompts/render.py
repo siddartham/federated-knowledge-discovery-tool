@@ -22,6 +22,20 @@ _env = Environment(
 )
 
 
+def _defuse(value: Any) -> str:
+    """Neutralize the untrusted-content fence markers inside retrieved text so a
+    malicious search result / page / tool output can't forge a ``<<UNTRUSTED_END>>``
+    marker to 'escape' its data region and inject instructions. Every ``<<`` in
+    the content gets a zero-width break, so the token no longer matches the real
+    framing markers while reading identically to a human/model. Applied to all
+    interpolated evidence via the ``| defuse`` filter."""
+    text = value if isinstance(value, str) else str(value)
+    return text.replace("<<", "<​<")  # zero-width break between the angle brackets
+
+
+_env.filters["defuse"] = _defuse
+
+
 def render_prompt(template_name: str, **context: Any) -> tuple[str, str]:
     """Renders a template's `system` and `user` blocks with the given context.
     Returns (system_prompt, user_prompt), both stripped of surrounding

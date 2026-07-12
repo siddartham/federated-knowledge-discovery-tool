@@ -12,7 +12,11 @@ reason - never a silent timeout.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import json
+from dataclasses import dataclass, field
+from typing import TypeVar
+
+from pydantic import BaseModel, ValidationError
 
 from columbo_py.config import SETTINGS
 from columbo_py.engine.llm.client import LLMClient
@@ -28,6 +32,12 @@ from columbo_py.engine.orchestrator.state import (
     State,
     select_evidence,
 )
+from columbo_py.engine.orchestrator.tool_provider import (
+    MAX_TOOL_CALLS,
+    TOOL_TOP_K,
+    ToolProvider,
+    select_tools_semantic,
+)
 from columbo_py.engine.prompts.plan_config import (
     DEFAULT_PLAN_CONFIG,
     PlanConfig,
@@ -38,6 +48,7 @@ from columbo_py.engine.search.registry import Registry
 from columbo_py.infra.browser.fetcher import Fetcher
 from columbo_py.infra.domaingate import DomainGate, ErrAborted
 from columbo_py.infra.events.emitter import EventEmitter
+from columbo_py.infra.redaction import redact_secrets
 from columbo_py.sources.dictionary import DictionaryClient
 
 PLAN_MODEL = SETTINGS.models.plan
@@ -56,6 +67,9 @@ class RunResult:
     final_confidence: float
     terminated_reason: str
     cost_usd: float
+    # The evidence selected into synthesis (id + content), so a run can be captured
+    # as an eval sample (`ask --capture-eval`) for offline judging / A-B testing.
+    contexts: list[dict[str, str]] = field(default_factory=list)
 
 
 async def run(
@@ -67,6 +81,7 @@ async def run(
     *,
     gate: DomainGate | None = None,
     dictionary: DictionaryClient | None = None,
+    tool_provider: ToolProvider | None = None,
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
     max_cost_usd: float = DEFAULT_MAX_COST_USD,
     confidence_cutoff: float = CONFIDENCE_CUTOFF,
@@ -75,11 +90,33 @@ async def run(
     min_guarantee: int = DEFAULT_MIN_GUARANTEE,
     char_budget: int = DEFAULT_CHAR_BUDGET,
 ) -> RunResult:
+    # Input filter (question boundary). Redact secrets before the question is
+    # ever written to the run log, and reject an oversized question before
+    # spending a single LLM call.
+    redacted_question, _ = redact_secrets(question)
+    emitter.emit(
+        "run_start",
+        question=redacted_question,
+        max_iterations=max_iterations,
+        max_cost_usd=max_cost_usd,
+    )
+    max_chars = SETTINGS.guardrails.max_question_chars
+    if len(question) > max_chars:
+        emitter.emit("input_rejected", reason="too_long", length=len(question), limit=max_chars)
+        return RunResult(
+            answer=(
+                f"I can't process this request: the question exceeds the {max_chars}-character "
+                "limit. Please shorten it and try again."
+            ),
+            citations=[],
+            iterations=0,
+            final_confidence=0.0,
+            terminated_reason="input_rejected",
+            cost_usd=0.0,
+        )
+
     state = State(question=question)
     cost = CostTracker(max_cost_usd)
-    emitter.emit(
-        "run_start", question=question, max_iterations=max_iterations, max_cost_usd=max_cost_usd
-    )
 
     # Resolve acronyms in the QUESTION itself before the first plan, so the
     # opening plan prompt already carries their definitions instead of leaving
@@ -97,7 +134,7 @@ async def run(
 
         plan = await _plan(
             state, registry, llm, emitter, cost, confidence_cutoff,
-            iteration, max_iterations, plan_config,
+            iteration, max_iterations, plan_config, tool_provider,
         )
         confidence = plan.confidence.composite
 
@@ -132,7 +169,7 @@ async def run(
         try:
             await execute_actions(
                 state, plan.actions, registry, fetcher, llm, emitter,
-                cost=cost, gate=gate, dictionary=dictionary,
+                cost=cost, gate=gate, dictionary=dictionary, tool_provider=tool_provider,
             )
         except ErrAborted:
             # User declined a domain-gate prompt with "abort": end the run
@@ -149,6 +186,12 @@ async def run(
 
     answer = await _synthesize(state, llm, emitter, cost, score_threshold, min_guarantee, char_budget)
 
+    # Recompute the selected evidence (pure, deterministic - no LLM call) so the
+    # RunResult can carry the exact contexts synthesis saw.
+    selected = select_evidence(
+        state, score_threshold=score_threshold, min_guarantee=min_guarantee, char_budget=char_budget
+    )
+
     emitter.emit(
         "run_end",
         iterations=iteration,
@@ -164,7 +207,59 @@ async def run(
         final_confidence=confidence,
         terminated_reason=terminated_reason,
         cost_usd=cost.spent_usd,
+        contexts=[{"id": f"{e.source}:{e.id}", "content": e.content} for e in selected],
     )
+
+
+_JsonModel = TypeVar("_JsonModel", bound=BaseModel)
+
+
+async def _generate_validated(
+    llm: LLMClient,
+    model_cls: type[_JsonModel],
+    *,
+    system_prompt: str,
+    user_prompt: str,
+    model: str,
+    request_type: str,
+    cost: CostTracker,
+    emitter: EventEmitter,
+    retries: int = 1,
+) -> _JsonModel:
+    """Generate an LLM reply and parse+validate it into `model_cls`.
+
+    Chat models occasionally emit malformed JSON (an unescaped quote, a dropped
+    delimiter) or a shape that fails validation. Rather than crash the whole run
+    on one bad reply, reprompt once - quoting the error and demanding a single
+    bare JSON object - then give up. The reprompt text is deterministic (built
+    from the same user_prompt + the error message), so the response cache stays
+    byte-stable across re-runs.
+    """
+    last_exc: Exception | None = None
+    prompt = user_prompt
+    for attempt in range(retries + 1):
+        response = await llm.generate(
+            system_prompt=system_prompt, prompt=prompt, model=model, request_type=request_type
+        )
+        cost.record(model, response.input_tokens, response.output_tokens)
+        try:
+            return model_cls.model_validate(extract_json(response.text))
+        except (json.JSONDecodeError, ValidationError) as exc:
+            last_exc = exc
+            emitter.emit(
+                "json_parse_retry",
+                request_type=request_type,
+                attempt=attempt + 1,
+                error=str(exc)[:200],
+            )
+            prompt = (
+                user_prompt
+                + "\n\nIMPORTANT: your previous reply could not be parsed as the required JSON "
+                + f"({type(exc).__name__}). Respond with ONLY a single valid JSON object matching "
+                + "the schema above - no prose, no markdown, no code fences."
+            )
+    assert last_exc is not None  # loop always runs >= 1 time
+    raise last_exc
 
 
 async def _plan(
@@ -177,7 +272,18 @@ async def _plan(
     iteration: int,
     max_iterations: int,
     plan_config: PlanConfig = DEFAULT_PLAN_CONFIG,
+    tool_provider: ToolProvider | None = None,
 ) -> OrchestrationResponse:
+    tools_ctx: list[dict[str, object]] = []
+    if tool_provider is not None:
+        catalog = await tool_provider.list_tools()
+        selected = await select_tools_semantic(
+            state.question, catalog, llm, k=TOOL_TOP_K, cost=cost, emitter=emitter
+        )
+        tools_ctx = [
+            {"name": t.name, "description": t.description, "schema": t.input_schema}
+            for t in selected
+        ]
     system_prompt, user_prompt = render_prompt(
         "orchestrate.j2",
         sources_block=registry.sources_prompt_block(),
@@ -186,17 +292,31 @@ async def _plan(
         max_iterations=max_iterations,
         confidence_cutoff=confidence_cutoff,
         evidence_summary=state.evidence_summary(),
+        tools=tools_ctx,
+        max_tool_calls=MAX_TOOL_CALLS,
         **plan_prompt_context(plan_config),
     )
-    response = await llm.generate(
-        system_prompt=system_prompt, prompt=user_prompt, model=PLAN_MODEL, request_type="plan"
+    parsed = await _generate_validated(
+        llm,
+        OrchestrationResponse,
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        model=PLAN_MODEL,
+        request_type="plan",
+        cost=cost,
+        emitter=emitter,
     )
-    cost.record(PLAN_MODEL, response.input_tokens, response.output_tokens)
-    parsed = OrchestrationResponse.model_validate(extract_json(response.text))
     emitter.emit(
         "plan_complete",
         iteration=iteration,
         confidence=parsed.confidence.composite,
+        # The four dimensions behind the composite, logged so the 0.8 cutoff can
+        # be calibrated against real answer quality offline (see
+        # docs/scoring-and-confidence.md, "Validating the design").
+        explicit_evidence=parsed.confidence.explicit_evidence,
+        implicit_evidence=parsed.confidence.implicit_evidence,
+        evidence_consistency=parsed.confidence.evidence_consistency,
+        answer_specificity=parsed.confidence.answer_specificity,
         thinking=parsed.thinking,
     )
     return parsed
@@ -229,14 +349,16 @@ async def _synthesize(
             for e in evidence
         ],
     )
-    response = await llm.generate(
+    parsed = await _generate_validated(
+        llm,
+        SynthesisResponse,
         system_prompt=system_prompt,
-        prompt=user_prompt,
+        user_prompt=user_prompt,
         model=SYNTHESIS_MODEL,
         request_type="synthesize",
+        cost=cost,
+        emitter=emitter,
     )
-    cost.record(SYNTHESIS_MODEL, response.input_tokens, response.output_tokens)
-    parsed = SynthesisResponse.model_validate(extract_json(response.text))
 
     # Turn the model's inline [source:id] tokens into clickable links, and add
     # a Sources footer - deterministically, from the evidence permalink map, so
@@ -246,10 +368,20 @@ async def _synthesize(
         parsed.citations, permalinks
     )
 
+    # Output guard: redact any secret that leaked from evidence into the answer
+    # (e.g. an API key checked into a repo the search surfaced).
+    if SETTINGS.guardrails.redact_answers:
+        parsed.answer, redacted = redact_secrets(parsed.answer)
+        if redacted:
+            emitter.emit("answer_redacted", count=redacted)
+
     emitter.emit(
         "synthesize_complete",
         evidence_count=len(evidence),
         citation_count=len(parsed.citations),
         linked_citations=sum(1 for c in parsed.citations if (c.source, c.id) in permalinks),
+        # Which evidence ids the answer actually cited, so `devtools analyze` can
+        # measure whether the scorer's ranking predicts what synthesis uses.
+        cited=[{"source": c.source, "id": c.id} for c in parsed.citations],
     )
     return parsed

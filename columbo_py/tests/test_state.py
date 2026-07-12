@@ -16,10 +16,10 @@ def test_select_evidence_respects_min_guarantee_over_threshold() -> None:
     )
     # Both score below threshold, but min_guarantee=2 should still include both.
     state.scored_results["1"] = ScoreResult(
-        source="1", relevance=0, answer_potential=0, context_value=0, source_quality=0
+        source="1", direct_relevance=0, answer_potential=0, context_value=0, source_quality=0
     )
     state.scored_results["2"] = ScoreResult(
-        source="2", relevance=1, answer_potential=0, context_value=0, source_quality=0
+        source="2", direct_relevance=1, answer_potential=0, context_value=0, source_quality=0
     )
 
     evidence = select_evidence(state, score_threshold=0.9, min_guarantee=2, char_budget=10_000)
@@ -32,13 +32,13 @@ def test_select_evidence_excludes_below_threshold_past_min_guarantee() -> None:
         SearchBatch(source="github", query="q", results=[_result("1"), _result("2"), _result("3")])
     )
     state.scored_results["1"] = ScoreResult(
-        source="1", relevance=13, answer_potential=13, context_value=13, source_quality=13
+        source="1", direct_relevance=13, answer_potential=13, context_value=13, source_quality=13
     )
     state.scored_results["2"] = ScoreResult(
-        source="2", relevance=0, answer_potential=0, context_value=0, source_quality=0
+        source="2", direct_relevance=0, answer_potential=0, context_value=0, source_quality=0
     )
     state.scored_results["3"] = ScoreResult(
-        source="3", relevance=0, answer_potential=0, context_value=0, source_quality=0
+        source="3", direct_relevance=0, answer_potential=0, context_value=0, source_quality=0
     )
 
     evidence = select_evidence(state, score_threshold=0.5, min_guarantee=1, char_budget=10_000)
@@ -57,7 +57,7 @@ def test_select_evidence_is_deterministic_regardless_of_insertion_order() -> Non
         state.batches.append(SearchBatch(source="github", query="q", results=results))
         for i in order:
             state.scored_results[i] = ScoreResult(
-                source=i, relevance=8, answer_potential=8, context_value=8, source_quality=8
+                source=i, direct_relevance=8, answer_potential=8, context_value=8, source_quality=8
             )
         return state
 
@@ -96,10 +96,10 @@ def test_evidence_summary_surfaces_top_scores() -> None:
         SearchBatch(source="github", query="tokens", results=[_result("1"), _result("2")])
     )
     state.scored_results["1"] = ScoreResult(
-        source="1", relevance=13, answer_potential=13, context_value=13, source_quality=13
+        source="1", direct_relevance=13, answer_potential=13, context_value=13, source_quality=13
     )
     state.scored_results["2"] = ScoreResult(
-        source="2", relevance=1, answer_potential=0, context_value=0, source_quality=0
+        source="2", direct_relevance=1, answer_potential=0, context_value=0, source_quality=0
     )
 
     summary = state.evidence_summary()

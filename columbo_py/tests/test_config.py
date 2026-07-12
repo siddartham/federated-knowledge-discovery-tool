@@ -26,14 +26,14 @@ def test_defaults_reproduce_historic_values() -> None:
     assert s.cost.output_per_mtok["claude-haiku-4-5"] == 4.0
 
     assert s.loop.confidence_cutoff == 0.8
-    assert s.loop.max_iterations == 6
+    assert s.loop.max_iterations == 3
     assert s.loop.max_cost_usd == 2.0
 
     assert s.evidence.score_threshold_points == 4
     assert s.evidence.min_guarantee == 8
     assert s.evidence.char_budget == 50_000
 
-    assert (s.plan.max_searches, s.plan.max_scrapes, s.plan.max_lookups) == (5, 5, 5)
+    assert (s.plan.max_searches, s.plan.max_scrapes, s.plan.max_lookups) == (10, 10, 10)
     assert s.plan.min_source_types == 2
     assert s.plan.anchor_fractions == (0.0, 0.3, 0.54, 0.77, 1.0)
 

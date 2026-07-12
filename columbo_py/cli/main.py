@@ -8,6 +8,9 @@ questions hit the same caches.
 from __future__ import annotations
 
 import asyncio
+import json
+import os
+from pathlib import Path
 
 import typer
 from rich.console import Console
@@ -17,6 +20,7 @@ from columbo_py.cli import devtools
 from columbo_py.config import SETTINGS
 from columbo_py.engine.llm.claude import ClaudeClient
 from columbo_py.engine.orchestrator import loop as orchestrator_loop
+from columbo_py.engine.orchestrator.tool_provider import ToolProvider
 from columbo_py.engine.search.registry import Registry
 from columbo_py.infra.browser.fetcher import WebFetcher
 from columbo_py.infra.browser.session import BrowserSession
@@ -62,6 +66,29 @@ def _build_registry(cache: CacheStore, browser_session: BrowserSession) -> Regis
     return registry
 
 
+async def _build_tool_provider(cache: CacheStore) -> ToolProvider | None:
+    """Opt-in MCP tool provider: built only when COLUMBO_MCP_TESTING_URL is set,
+    so the default plan prompt / behaviour is unchanged for users without it.
+    The token is sent as a per-user bearer so the platform enforces the caller's
+    RBAC. Needs the `mcp` extra (pip install '.[mcp]'). The raw provider is
+    wrapped in a GuardedToolProvider so the [guardrails] policy (tool allowlist +
+    argument validation) applies before any tool runs."""
+    url = os.environ.get("COLUMBO_MCP_TESTING_URL")
+    if not url:
+        return None
+    from columbo_py.sources.mcp import GuardedToolProvider, MCPToolProvider, RemoteMCPClient
+
+    client = RemoteMCPClient(url, token=os.environ.get("COLUMBO_MCP_TESTING_TOKEN"))
+    await client.connect()
+    provider = MCPToolProvider({"testing_platform": client}, cache)
+    policy = SETTINGS.guardrails
+    return GuardedToolProvider(
+        provider,
+        allowlist=policy.tool_allowlist,
+        validate_args=policy.validate_tool_args,
+    )
+
+
 def _run_id_for(question: str) -> str:
     return f"run-{abs(hash(question)) % 10_000_000:07d}"
 
@@ -70,13 +97,18 @@ async def _ask(
     question: str, *, headless: bool, max_iterations: int, max_cost_usd: float
 ) -> orchestrator_loop.RunResult:
     configure_logging()
-    cache = CacheStore()
+    # In a hosted, multi-user deployment the request layer sets COLUMBO_PRINCIPAL
+    # to the authenticated caller so cached content is partitioned per user and
+    # never leaks across identities. Unset on the single-user CLI -> shared cache.
+    cache = CacheStore(scope=os.environ.get("COLUMBO_PRINCIPAL"))
     log_path = DEFAULT_RUNS_DIR / f"{_run_id_for(question)}.jsonl"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     emitter = EventEmitter(_run_id_for(question), log_path)
 
     gate = DomainGate.load(DEFAULT_DOMAINS_PATH, allow_seed=_SEED_ALLOW_DOMAINS)
     dictionary = DictionaryClient()
+
+    tool_provider = await _build_tool_provider(cache)
 
     async with BrowserSession(DEFAULT_USER_DATA_DIR, headless=headless) as session:
         fetcher = WebFetcher(session, cache, emitter)
@@ -91,10 +123,13 @@ async def _ask(
                 emitter,
                 gate=gate,
                 dictionary=dictionary,
+                tool_provider=tool_provider,
                 max_iterations=max_iterations,
                 max_cost_usd=max_cost_usd,
             )
         finally:
+            if tool_provider is not None:
+                await tool_provider.aclose()
             await fetcher.aclose()
             await dictionary.aclose()
             emitter.close()
@@ -109,6 +144,12 @@ def _print_result(result: orchestrator_loop.RunResult) -> None:
     )
 
 
+def _eval_sample(question: str, result: orchestrator_loop.RunResult) -> dict[str, object]:
+    """A `{question, answer, contexts}` eval sample from a finished run — the input
+    `devtools eval` judges, and the unit of an A/B test of a scoring change."""
+    return {"question": question, "answer": result.answer, "contexts": result.contexts}
+
+
 @app.command()
 def ask(
     question: str = typer.Argument(..., help="The question to answer"),
@@ -121,12 +162,22 @@ def ask(
     max_cost_usd: float = typer.Option(
         orchestrator_loop.DEFAULT_MAX_COST_USD, help="Stop early if estimated spend exceeds this"
     ),
+    capture_eval: Path = typer.Option(
+        None,
+        "--capture-eval",
+        help="Append this run as a {question, answer, contexts} eval sample to a JSONL "
+        "(for `devtools eval` / A-B testing scoring changes).",
+    ),
 ) -> None:
     """Ask Columbo a question once and print the cited answer."""
     result = asyncio.run(
         _ask(question, headless=headless, max_iterations=max_iterations, max_cost_usd=max_cost_usd)
     )
     _print_result(result)
+    if capture_eval is not None:
+        with capture_eval.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(_eval_sample(question, result)) + "\n")
+        console.print(f"[dim]captured eval sample → {capture_eval}[/dim]")
 
 
 @app.command()
@@ -143,11 +194,15 @@ def interactive(
 
 async def _interactive(*, headless: bool, max_iterations: int, max_cost_usd: float) -> None:
     configure_logging()
-    cache = CacheStore()
+    # In a hosted, multi-user deployment the request layer sets COLUMBO_PRINCIPAL
+    # to the authenticated caller so cached content is partitioned per user and
+    # never leaks across identities. Unset on the single-user CLI -> shared cache.
+    cache = CacheStore(scope=os.environ.get("COLUMBO_PRINCIPAL"))
     # One gate for the whole session, so a domain approved for the first
     # question isn't re-prompted for the next.
     gate = DomainGate.load(DEFAULT_DOMAINS_PATH, allow_seed=_SEED_ALLOW_DOMAINS)
     dictionary = DictionaryClient()
+    tool_provider = await _build_tool_provider(cache)
     async with BrowserSession(DEFAULT_USER_DATA_DIR, headless=headless) as session:
         registry = _build_registry(cache, session)
         setup_emitter = EventEmitter("interactive-session")
@@ -174,6 +229,7 @@ async def _interactive(*, headless: bool, max_iterations: int, max_cost_usd: flo
                     emitter,
                     gate=gate,
                     dictionary=dictionary,
+                    tool_provider=tool_provider,
                     max_iterations=max_iterations,
                     max_cost_usd=max_cost_usd,
                 )
@@ -181,9 +237,36 @@ async def _interactive(*, headless: bool, max_iterations: int, max_cost_usd: flo
                 console.print()
                 emitter.close()
         finally:
+            if tool_provider is not None:
+                await tool_provider.aclose()
             await fetcher.aclose()
             await dictionary.aclose()
             cache.close()
+
+
+@app.command()
+def desktop() -> None:
+    """Open Columbo as a native desktop window (Chainlit UI in an OS webview).
+    Requires the 'desktop' extra: `pip install ".\\[desktop]"`."""
+    from columbo_py.ui.desktop import run
+
+    run()
+
+
+@app.command()
+def ui() -> None:
+    """Launch the desktop chat UI (Chainlit). Requires the 'ui' extra:
+    `pip install ".\\[ui]"`. Opens a local chat window over the same engine."""
+    import shutil
+    import subprocess
+    from pathlib import Path
+
+    if shutil.which("chainlit") is None:
+        # typer.echo (not rich console) so the '[ui]' extra name prints literally.
+        typer.echo("Chainlit is not installed. Run: pip install '.[ui]'")
+        raise typer.Exit(1)
+    app_path = Path(__file__).resolve().parent.parent / "ui" / "app.py"
+    raise typer.Exit(subprocess.run(["chainlit", "run", str(app_path)], check=False).returncode)
 
 
 if __name__ == "__main__":

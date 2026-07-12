@@ -20,11 +20,12 @@ from columbo_py.engine.llm.client import LLMClient
 from columbo_py.engine.llm.parsing import extract_json
 from columbo_py.engine.orchestrator.acronyms import extract_acronyms
 from columbo_py.engine.orchestrator.cost import CostTracker
-from columbo_py.engine.orchestrator.models import Actions, RestitchResult, ScoreResult
+from columbo_py.engine.orchestrator.models import Actions, RestitchResult, ScoreResult, ToolCall
 from columbo_py.engine.orchestrator.state import ScrapeResult, SearchBatch, State
+from columbo_py.engine.orchestrator.tool_provider import MAX_TOOL_CALLS, ToolProvider
 from columbo_py.engine.prompts.render import render_prompt
 from columbo_py.engine.search.registry import Registry
-from columbo_py.engine.search.result import Options
+from columbo_py.engine.search.result import Options, Result
 from columbo_py.infra.browser.fetcher import Fetcher
 from columbo_py.infra.domaingate import DomainGate
 from columbo_py.infra.events.emitter import EventEmitter
@@ -93,8 +94,9 @@ async def execute_actions(
     cost: CostTracker | None = None,
     gate: DomainGate | None = None,
     dictionary: DictionaryClient | None = None,
+    tool_provider: ToolProvider | None = None,
 ) -> None:
-    await _run_actions(state, actions, registry, fetcher, emitter, gate)
+    await _run_actions(state, actions, registry, fetcher, emitter, gate, tool_provider)
     await enrich_acronyms(state, dictionary, emitter)
     await _score_new_evidence(state, llm, emitter, cost)
 
@@ -164,6 +166,7 @@ async def _run_actions(
     fetcher: Fetcher,
     emitter: EventEmitter,
     gate: DomainGate | None = None,
+    tool_provider: ToolProvider | None = None,
 ) -> None:
     state_lock = asyncio.Lock()
     already_scraped = {s.url for s in state.scrapes}
@@ -243,13 +246,46 @@ async def _run_actions(
             return
         emitter.emit("lookup_complete", term=term, source=None, ok=False)
 
+    async def do_tool_call(tc: ToolCall) -> None:
+        if tool_provider is None:
+            return
+        try:
+            content = await tool_provider.call_tool(tc.name, tc.arguments)
+        except Exception as exc:
+            async with state_lock:
+                state.actions_taken.append(f"tool {tc.name} -> error: {exc}")
+            emitter.emit("tool_complete", tool=tc.name, ok=False, error=str(exc))
+            return
+        # Tool output becomes an ordinary evidence batch: scored in Phase 2 and
+        # synthesized like any search result. The batch's query label is the
+        # canonical arguments, so it's stable for the plan digest and cache.
+        query = json.dumps(tc.arguments, sort_keys=True, default=str)
+        results = [
+            Result(
+                source=f"tool:{tc.name}",
+                id=block.id,
+                title=block.title,
+                content=block.text,
+                permalink=block.uri,
+                metadata={"tool": tc.name},
+            )
+            for block in content
+        ]
+        async with state_lock:
+            state.batches.append(SearchBatch(source=f"tool:{tc.name}", query=query, results=results))
+            state.actions_taken.append(f"tool {tc.name} -> {len(results)} results")
+            state.stats.searches += 1
+            state.stats.results += len(results)
+        emitter.emit("tool_complete", tool=tc.name, ok=True, result_count=len(results))
+
     # Phase 1: everything in parallel. return_exceptions is unnecessary here -
     # every do_* coroutine already catches its own exceptions so one failed
-    # search/scrape/lookup can't cancel the sibling tasks in the gather.
+    # search/scrape/lookup/tool can't cancel the sibling tasks in the gather.
     await asyncio.gather(
         *(do_search(a.source, a.query) for a in actions.searches),
         *(do_scrape(u) for u in scrape_urls),
         *(do_lookup(t) for t in actions.lookups),
+        *(do_tool_call(tc) for tc in actions.tool_calls[:MAX_TOOL_CALLS]),
     )
 
 
@@ -306,20 +342,37 @@ async def _score_new_evidence(
             )
             return
         scored = 0
+        # Log each result's four dimensions (not just the composite) so the
+        # scoring design can be validated offline - e.g. a dimension-correlation
+        # check that the four axes are actually independent. See
+        # docs/scoring-and-confidence.md ("Validating the design").
+        scores_log: list[dict[str, object]] = []
         for result, raw in zip(unscored, raw_scores, strict=False):
             try:
-                state.scored_results[result.id] = ScoreResult.model_validate(
+                score = ScoreResult.model_validate(
                     {**raw, "source": result.id} if isinstance(raw, dict) else raw
                 )
             except (ValidationError, TypeError):
                 continue
+            state.scored_results[result.id] = score
             scored += 1
+            scores_log.append(
+                {
+                    "id": result.id,
+                    "direct_relevance": score.direct_relevance,
+                    "answer_potential": score.answer_potential,
+                    "context_value": score.context_value,
+                    "source_quality": score.source_quality,
+                    "composite": round(score.composite, 4),
+                }
+            )
         emitter.emit(
             "score_complete",
             batch_source=batch.source,
             ok=True,
             scored=scored,
             expected=len(unscored),
+            scores=scores_log,
         )
 
     async def restitch_scrape(scrape: ScrapeResult) -> None:
@@ -338,15 +391,27 @@ async def _score_new_evidence(
         if cost is not None:
             cost.record(RESTITCH_MODEL, response.input_tokens, response.output_tokens)
         try:
-            raw = extract_json(response.text)
-            state.scored_scrapes[scrape.url] = RestitchResult.model_validate(raw)
+            result = RestitchResult.model_validate(extract_json(response.text))
         except (json.JSONDecodeError, TypeError, ValidationError):
             emitter.emit(
                 "scrape_complete", url=scrape.url, ok=False, error="invalid_restitch_json"
             )
+            return
+        state.scored_scrapes[scrape.url] = result
+        # Same four dimensions as the search scorer, logged so restitch-scored
+        # scrape evidence joins the dimension-correlation analysis (devtools analyze).
+        emitter.emit(
+            "restitch_complete",
+            url=scrape.url,
+            direct_relevance=result.direct_relevance,
+            answer_potential=result.answer_potential,
+            context_value=result.context_value,
+            source_quality=result.source_quality,
+            composite=round(result.composite, 4),
+        )
 
     # Lookup hits are scored through the same scorer as search results (a
-    # synthetic batch), so they get real relevance scores and flow into
+    # synthetic batch), so they get real direct_relevance scores and flow into
     # evidence selection instead of only informing the planner digest.
     # score_batch filters by id, so already-scored lookups are skipped.
     lookup_batches = (

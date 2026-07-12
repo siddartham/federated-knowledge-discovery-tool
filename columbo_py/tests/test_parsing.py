@@ -46,3 +46,15 @@ def test_extract_json_escaped_quote_inside_string() -> None:
 def test_extract_json_raises_on_garbage() -> None:
     with pytest.raises(json.JSONDecodeError):
         extract_json("not json at all, no braces either")
+
+
+def test_extract_json_trailing_comma_object() -> None:
+    assert extract_json('{"a": 1, "b": 2,}') == {"a": 1, "b": 2}
+
+
+def test_extract_json_trailing_comma_array() -> None:
+    assert extract_json("[1, 2, 3,]") == [1, 2, 3]
+
+
+def test_extract_json_trailing_comma_with_fence_and_preamble() -> None:
+    assert extract_json('Here:\n```json\n{"items": [1, 2,]}\n```') == {"items": [1, 2]}
