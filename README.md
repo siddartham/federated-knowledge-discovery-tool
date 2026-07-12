@@ -1,5 +1,7 @@
 # Columbo
 
+📖 **[Read the documentation →](https://siddartham.github.io/federated-knowledge-discovery-tool/)**
+
 A command-line agent for an enterprise knowledge base spread across Slack,
 Confluence, GitHub, Google Drive, and Jira. Given a natural-language
 question, Columbo iteratively searches sources, scrapes referenced pages,
