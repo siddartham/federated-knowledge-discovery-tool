@@ -12,6 +12,9 @@
             across every run log in a directory.
 - `compare` diffs the final-run metrics of two run logs - a quick regression
             check when tuning prompts or thresholds against the same question.
+- `analyze` validates the scoring/confidence design against a directory of run
+            logs: dimension-correlation, scorer-vs-citations, and (with --evals)
+            confidence calibration. See docs/scoring-and-confidence.md.
 
 `bench` and `compare` both just parse the JSON-lines run log every real run
 already writes (see `infra/events/emitter.py`) - no separate instrumentation.
@@ -117,8 +120,8 @@ def smoke() -> None:
     )
     score = json.dumps(
         [
-            {"source": "1", "relevance": 13, "answer_potential": 13, "context_value": 8, "source_quality": 13},
-            {"source": "2", "relevance": 8, "answer_potential": 5, "context_value": 8, "source_quality": 8},
+            {"source": "1", "direct_relevance": 13, "answer_potential": 13, "context_value": 8, "source_quality": 13},
+            {"source": "2", "direct_relevance": 8, "answer_potential": 5, "context_value": 8, "source_quality": 8},
         ]
     )
     plan2 = json.dumps(
@@ -259,7 +262,6 @@ def plan(
                 iteration=1,
                 max_iterations=orchestrator_loop.DEFAULT_MAX_ITERATIONS,
             )
-
             c = response.confidence
             actions = response.actions
             if state.dictionary:
@@ -310,6 +312,16 @@ def evaluate(
     model: str = typer.Option(
         "", help="Judge model override; defaults to config [models].judge (Sonnet)."
     ),
+    check: bool = typer.Option(
+        False,
+        "--check",
+        help="Exit non-zero if mean faithfulness < [guardrails].min_faithfulness (CI gate).",
+    ),
+    out: Path = typer.Option(
+        None,
+        "--out",
+        help="Write per-sample {question, faithfulness, ...} JSONL for `devtools analyze --evals`.",
+    ),
 ) -> None:
     """Offline LLM-as-judge evaluation: score answers on faithfulness (are the
     claims grounded in the contexts?), answer-relevancy (does it address the
@@ -353,6 +365,29 @@ def evaluate(
             typer.echo(f"  answer_relevancy  {sum(x.answer_relevancy for x in scored) / n:.3f}")
             typer.echo(f"  context_precision {sum(x.context_precision for x in scored) / n:.3f}")
             typer.echo(f"  overall           {sum(x.overall for x in scored) / n:.3f}")
+
+            if out is not None:
+                with out.open("w", encoding="utf-8") as fh:
+                    for sample, s in zip(samples, scored):
+                        fh.write(json.dumps({
+                            "question": sample.question,
+                            "faithfulness": s.faithfulness,
+                            "answer_relevancy": s.answer_relevancy,
+                            "context_precision": s.context_precision,
+                            "overall": s.overall,
+                        }) + "\n")
+                typer.echo(f"\nwrote {n} score(s) to {out}  (feed to `devtools analyze --evals`)")
+
+            if check:
+                mean_faithfulness = sum(x.faithfulness for x in scored) / n
+                floor = SETTINGS.guardrails.min_faithfulness
+                if mean_faithfulness < floor:
+                    typer.echo(
+                        f"\nFAIL: mean faithfulness {mean_faithfulness:.3f} < "
+                        f"min_faithfulness {floor:.3f}"
+                    )
+                    raise typer.Exit(1)
+                typer.echo(f"\nPASS: mean faithfulness {mean_faithfulness:.3f} >= {floor:.3f}")
         finally:
             cache.close()
 
@@ -418,6 +453,39 @@ def compare(run_a: Path, run_b: Path) -> None:
 
     for key in ("iterations", "final_confidence", "cost_usd", "terminated_reason"):
         typer.echo(f"{key}: {a.get(key)!r} -> {b.get(key)!r}")
+
+
+@app.command()
+def analyze(
+    runs_dir: Path = typer.Argument(DEFAULT_RUNS_DIR, help="Directory of run .jsonl logs"),
+    evals: Path = typer.Option(
+        None, help="Optional JSONL of {question, faithfulness} to calibrate confidence"
+    ),
+    compare_gate: bool = typer.Option(
+        False,
+        "--compare-gate",
+        help="Recompute mean vs. relevance-gated rankings from the logged dims and diff them.",
+    ),
+    as_json: bool = typer.Option(False, "--json", help="Emit the raw report as JSON"),
+) -> None:
+    """Validate the scoring/confidence design against logged runs: dimension
+    independence (correlation), scorer-vs-citations, confidence calibration (with
+    --evals), and a mean-vs-gated ranking diff (with --compare-gate). Read-only;
+    just parses the run logs. See docs/scoring-and-confidence.md."""
+    from columbo_py.evals.analyze import (
+        build_report,
+        format_report,
+        load_evals_index,
+        load_events,
+    )
+
+    events = load_events(runs_dir)
+    if not events:
+        typer.echo(f"no run logs found in {runs_dir}")
+        raise typer.Exit(1)
+    index = load_evals_index(evals) if evals else None
+    report = build_report(events, index, compare_gate=compare_gate)
+    typer.echo(json.dumps(report, indent=2, default=str) if as_json else format_report(report))
 
 
 def _load_events_dir(run_log_dir: Path) -> list[dict[str, Any]]:
