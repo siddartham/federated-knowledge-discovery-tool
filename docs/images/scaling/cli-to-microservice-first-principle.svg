@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 246" role="img">
+<title>Separate the engine from delivery: wrapping swaps the shell, not the loop</title>
+<desc>The engine that computes the answer stays fixed while the delivery shell (CLI, HTTP, UI) is swappable; what actually changes when wrapping is identity, concurrency, and cache scope.</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.6}.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-purple>rect{fill:#EEEDFE;stroke:#534AB7;stroke-width:.6}.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal>rect{fill:#E1F5EE;stroke:#0F6E56;stroke-width:.6}.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+.c-amber>rect{fill:#FAEEDA;stroke:#854F0B;stroke-width:.6}.c-amber .th{fill:#633806}.c-amber .ts{fill:#854F0B}
+</style>
+<rect x="0" y="0" width="680" height="246" fill="#ffffff"/>
+
+<g class="c-teal"><rect x="260" y="70" width="160" height="70" rx="8"/><text class="th" x="340" y="98" text-anchor="middle">the engine</text><text class="ts" x="340" y="118" text-anchor="middle">the loop — unchanged</text><text class="ts" x="340" y="134" text-anchor="middle">route·plan·execute·score</text></g>
+
+<g class="c-purple"><rect x="40" y="48" width="150" height="40" rx="6"/><text class="th" x="115" y="68" text-anchor="middle">CLI</text><text class="ts" x="115" y="82" text-anchor="middle">ask / interactive</text></g>
+<g class="c-purple"><rect x="40" y="102" width="150" height="40" rx="6"/><text class="th" x="115" y="122" text-anchor="middle">FastAPI</text><text class="ts" x="115" y="136" text-anchor="middle">HTTP endpoint</text></g>
+<g class="c-purple"><rect x="40" y="156" width="150" height="40" rx="6"/><text class="th" x="115" y="176" text-anchor="middle">Chainlit UI</text><text class="ts" x="115" y="190" text-anchor="middle">chat window</text></g>
+<line x1="190" y1="68" x2="260" y2="92" stroke="#888780" stroke-width="1.2"/>
+<line x1="190" y1="122" x2="260" y2="105" stroke="#888780" stroke-width="1.2"/>
+<line x1="190" y1="176" x2="260" y2="118" stroke="#888780" stroke-width="1.2"/>
+<text class="ts" x="115" y="222" text-anchor="middle">delivery shells — swappable</text>
+
+<g class="c-amber"><rect x="470" y="60" width="190" height="90" rx="8"/><text class="th" x="565" y="84" text-anchor="middle">what actually changes</text><text class="ts" x="565" y="106" text-anchor="middle">per-user identity</text><text class="ts" x="565" y="123" text-anchor="middle">concurrency</text><text class="ts" x="565" y="140" text-anchor="middle">cache scope · browser session</text></g>
+<line x1="420" y1="105" x2="470" y2="105" stroke="#888780" stroke-width="1.2"/>
+
+<text class="ts" x="340" y="230" text-anchor="middle">the engine is reusable behind any shell; the real work of "make it a service" is the cross-cutting state, not the loop</text>
+</svg>

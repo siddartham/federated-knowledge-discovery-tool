@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 236" role="img">
+<title>Reading a call tree: spot the LLM leaves, the parallel fan-outs, and what repeats</title>
+<desc>A question flows through plan, gather, score and synthesize to an answer; a loop-back arrow marks what repeats, and a legend explains the LLM-call, parallel, and repeat markers.</desc>
+<defs><marker id="arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.6}.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-purple>rect{fill:#EEEDFE;stroke:#534AB7;stroke-width:.6}.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal>rect{fill:#E1F5EE;stroke:#0F6E56;stroke-width:.6}.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+</style>
+<rect x="0" y="0" width="680" height="236" fill="#ffffff"/>
+
+<g class="c-gray"><rect x="14" y="70" width="84" height="52" rx="6"/><text class="th" x="56" y="100" text-anchor="middle">question</text></g>
+<g class="c-purple"><rect x="108" y="70" width="104" height="52" rx="6"/><text class="th" x="160" y="92" text-anchor="middle">plan ★</text><text class="ts" x="160" y="110" text-anchor="middle">Sonnet</text></g>
+<g class="c-teal"><rect x="222" y="70" width="118" height="52" rx="6"/><text class="th" x="281" y="92" text-anchor="middle">gather ‖</text><text class="ts" x="281" y="110" text-anchor="middle">search·scrape·tool</text></g>
+<g class="c-purple"><rect x="350" y="70" width="104" height="52" rx="6"/><text class="th" x="402" y="92" text-anchor="middle">score ★</text><text class="ts" x="402" y="110" text-anchor="middle">Haiku</text></g>
+<g class="c-purple"><rect x="464" y="70" width="104" height="52" rx="6"/><text class="th" x="516" y="92" text-anchor="middle">synth ★</text><text class="ts" x="516" y="110" text-anchor="middle">Opus, once</text></g>
+<g class="c-gray"><rect x="578" y="70" width="88" height="52" rx="6"/><text class="th" x="622" y="100" text-anchor="middle">answer</text></g>
+
+<line class="arr" x1="98" y1="96" x2="108" y2="96"/>
+<line class="arr" x1="212" y1="96" x2="222" y2="96"/>
+<line class="arr" x1="340" y1="96" x2="350" y2="96"/>
+<line class="arr" x1="454" y1="96" x2="464" y2="96"/>
+<line class="arr" x1="568" y1="96" x2="578" y2="96"/>
+
+<path d="M402 122 L402 160 L160 160 L160 122" fill="none" stroke="#888780" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arw)"/>
+<text class="ts" x="281" y="176" text-anchor="middle">↺ repeats each iteration until confident</text>
+
+<text class="ts" x="14" y="212" text-anchor="start">★ = LLM call (where cost &amp; latency live)   ·   ‖ = parallel fan-out   ·   the loop-back shows what repeats vs. runs once</text>
+</svg>

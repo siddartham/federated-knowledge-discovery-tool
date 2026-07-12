@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 226" role="img">
+<title>All of auth reduces to three questions: authentication, authorization, delegation</title>
+<desc>Three pillars: authentication asks who you are, authorization asks what you may do, and delegation asks whether a service may act on your behalf.</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.c-blue>rect{fill:#E6F1FB;stroke:#185FA5;stroke-width:.6}.c-blue .th{fill:#0C447C}.c-blue .ts{fill:#185FA5}
+.c-purple>rect{fill:#EEEDFE;stroke:#534AB7;stroke-width:.6}.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal>rect{fill:#E1F5EE;stroke:#0F6E56;stroke-width:.6}.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.6}.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+</style>
+<rect x="0" y="0" width="680" height="226" fill="#ffffff"/>
+
+<g class="c-blue"><rect x="24" y="46" width="200" height="94" rx="8"/><text class="th" x="124" y="74" text-anchor="middle">authentication</text><text class="ts" x="124" y="98" text-anchor="middle">who are you?</text><text class="ts" x="124" y="120" text-anchor="middle">login · tokens · SSO · IdP</text></g>
+<g class="c-purple"><rect x="240" y="46" width="200" height="94" rx="8"/><text class="th" x="340" y="74" text-anchor="middle">authorization</text><text class="ts" x="340" y="98" text-anchor="middle">what may you do?</text><text class="ts" x="340" y="120" text-anchor="middle">RBAC · ACL · scopes</text></g>
+<g class="c-teal"><rect x="456" y="46" width="200" height="94" rx="8"/><text class="th" x="556" y="74" text-anchor="middle">delegation</text><text class="ts" x="556" y="98" text-anchor="middle">may a service act as you?</text><text class="ts" x="556" y="120" text-anchor="middle">OAuth · OBO · token-exchange</text></g>
+
+<g class="c-gray"><rect x="24" y="160" width="632" height="40" rx="8"/><text class="ts" x="340" y="184" text-anchor="middle">every scheme — OAuth, SSO, OBO, RBAC — is a specific answer to one of these three questions</text></g>
+</svg>

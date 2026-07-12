@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 260" role="img">
+<title>Thin waist: a standard-library orchestration core with single-purpose library leaves</title>
+<desc>A central orchestration core built on the standard library, surrounded by single-purpose external libraries, one per concern.</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.6}.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-pink>rect{fill:#FBEAF0;stroke:#993556;stroke-width:.6}.c-pink .th{fill:#72243E}.c-pink .ts{fill:#993556}
+</style>
+<rect x="0" y="0" width="680" height="260" fill="#ffffff"/>
+
+<line x1="340" y1="120" x2="150" y2="60" stroke="#D3D1C7" stroke-width="1"/>
+<line x1="340" y1="120" x2="340" y2="52" stroke="#D3D1C7" stroke-width="1"/>
+<line x1="340" y1="120" x2="530" y2="60" stroke="#D3D1C7" stroke-width="1"/>
+<line x1="340" y1="120" x2="120" y2="128" stroke="#D3D1C7" stroke-width="1"/>
+<line x1="340" y1="120" x2="560" y2="128" stroke="#D3D1C7" stroke-width="1"/>
+<line x1="340" y1="120" x2="150" y2="188" stroke="#D3D1C7" stroke-width="1"/>
+<line x1="340" y1="120" x2="340" y2="196" stroke="#D3D1C7" stroke-width="1"/>
+<line x1="340" y1="120" x2="530" y2="188" stroke="#D3D1C7" stroke-width="1"/>
+
+<g class="c-gray"><rect x="228" y="96" width="224" height="52" rx="8"/><text class="th" x="340" y="118" text-anchor="middle">orchestration core</text><text class="ts" x="340" y="136" text-anchor="middle">stdlib: asyncio · json · tomllib · re</text></g>
+
+<g class="c-pink"><rect x="96" y="42" width="108" height="26" rx="13"/><text class="ts" x="150" y="59" text-anchor="middle">anthropic · LLM</text></g>
+<g class="c-pink"><rect x="292" y="38" width="96" height="26" rx="13"/><text class="ts" x="340" y="55" text-anchor="middle">jinja2 · prompts</text></g>
+<g class="c-pink"><rect x="476" y="42" width="108" height="26" rx="13"/><text class="ts" x="530" y="59" text-anchor="middle">playwright · browser</text></g>
+<g class="c-pink"><rect x="40" y="114" width="96" height="26" rx="13"/><text class="ts" x="88" y="131" text-anchor="middle">httpx · HTTP</text></g>
+<g class="c-pink"><rect x="544" y="114" width="112" height="26" rx="13"/><text class="ts" x="600" y="131" text-anchor="middle">pydantic · schemas</text></g>
+<g class="c-pink"><rect x="96" y="184" width="108" height="26" rx="13"/><text class="ts" x="150" y="201" text-anchor="middle">diskcache · cache</text></g>
+<g class="c-pink"><rect x="290" y="188" width="100" height="26" rx="13"/><text class="ts" x="340" y="205" text-anchor="middle">structlog · events</text></g>
+<g class="c-pink"><rect x="484" y="184" width="92" height="26" rx="13"/><text class="ts" x="530" y="201" text-anchor="middle">mcp · tools</text></g>
+
+<text class="ts" x="340" y="242" text-anchor="middle">the loop and fan-out are your own stdlib code; every dependency is a single-purpose leaf — no framework in the middle</text>
+</svg>

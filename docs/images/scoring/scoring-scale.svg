@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 176" role="img">
+<title>The 0-13 Fibonacci scale: fine buckets at the bottom, coarse at the top</title>
+<desc>A number line with ticks at 0, 1, 2, 3, 5, 8, 13 shows widening gaps; the low end is fine where distinctions are reliable and the keep/drop cut lives, the high end is coarse to avoid fake precision.</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}.tsm{font-size:11px;fill:#5F5E5A}
+</style>
+<rect x="0" y="0" width="680" height="176" fill="#ffffff"/>
+
+<line x1="40" y1="92" x2="640" y2="92" stroke="#5F5E5A" stroke-width="1.5"/>
+<g stroke="#5F5E5A" stroke-width="1.5">
+<line x1="40" y1="84" x2="40" y2="100"/>
+<line x1="86" y1="84" x2="86" y2="100"/>
+<line x1="132" y1="84" x2="132" y2="100"/>
+<line x1="178" y1="84" x2="178" y2="100"/>
+<line x1="271" y1="84" x2="271" y2="100"/>
+<line x1="409" y1="84" x2="409" y2="100"/>
+<line x1="640" y1="84" x2="640" y2="100"/>
+</g>
+<g class="th" text-anchor="middle">
+<text x="40" y="120">0</text><text x="86" y="120">1</text><text x="132" y="120">2</text><text x="178" y="120">3</text><text x="271" y="120">5</text><text x="409" y="120">8</text><text x="640" y="120">13</text>
+</g>
+
+<path d="M40 74 Q109 62 178 74" fill="none" stroke="#185FA5" stroke-width="1"/>
+<text class="ts" x="109" y="52" text-anchor="middle" fill="#0C447C">fine — distinctions the grader makes reliably</text>
+<path d="M271 74 Q455 58 640 74" fill="none" stroke="#993C1D" stroke-width="1"/>
+<text class="ts" x="455" y="48" text-anchor="middle" fill="#712B13">coarse — no fake precision; forces a decisive jump</text>
+
+<line x1="225" y1="72" x2="225" y2="108" stroke="#3B6D11" stroke-width="1" stroke-dasharray="4 3"/>
+<text class="tsm" x="225" y="146" text-anchor="middle" fill="#3B6D11">scorer admit ≈ 4</text>
+<line x1="520" y1="72" x2="520" y2="108" stroke="#534AB7" stroke-width="1" stroke-dasharray="4 3"/>
+<text class="tsm" x="520" y="146" text-anchor="middle" fill="#3C3489">confidence stop ≈ 10.4</text>
+
+<text class="tsm" x="40" y="166" text-anchor="start">gaps widen: 1 · 1 · 1 · 2 · 3 · 5 — equal steps in perceived value map to expanding steps in the number</text>
+</svg>

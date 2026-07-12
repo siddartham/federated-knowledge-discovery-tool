@@ -1,0 +1,75 @@
+<svg width="680" height="676" viewBox="0 0 680 676" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Columbo guardrail architecture: a guard at every trust boundary</title>
+<desc>The request pipeline runs down the left as gray stages: question, plan and route, execute fan-out, retrieved evidence, synthesize, answer. At each boundary a guard fires, shown on the right: teal guards already exist, amber guards are to be added. A cross-cutting band at the bottom lists cost and loop caps, the audit log, cache isolation, and evals.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}
+.ts{font-size:12px;fill:#5F5E5A}
+.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.arr{fill:none;stroke:#5F5E5A;stroke-width:1.5;marker-end:url(#arrow)}
+.box{fill:#FBFAF7;stroke:#888780;stroke-width:0.6}
+.node{cursor:pointer}
+.leader{fill:none;stroke:#B4B2A9;stroke-width:0.5;stroke-dasharray:2 2}
+.c-gray>rect,.c-gray>circle,.c-gray>ellipse{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:0.6}
+.c-gray .t,.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-purple>rect,.c-purple>circle,.c-purple>ellipse{fill:#EEEDFE;stroke:#534AB7;stroke-width:0.6}
+.c-purple .t,.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal>rect,.c-teal>circle,.c-teal>ellipse{fill:#E1F5EE;stroke:#0F6E56;stroke-width:0.6}
+.c-teal .t,.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+.c-amber>rect,.c-amber>circle,.c-amber>ellipse{fill:#FAEEDA;stroke:#854F0B;stroke-width:0.6}
+.c-amber .t,.c-amber .th{fill:#633806}.c-amber .ts{fill:#854F0B}
+.c-coral>rect,.c-coral>circle,.c-coral>ellipse{fill:#FAECE7;stroke:#993C1D;stroke-width:0.6}
+.c-coral .t,.c-coral .th{fill:#712B13}.c-coral .ts{fill:#993C1D}
+.c-green>rect,.c-green>circle,.c-green>ellipse{fill:#EAF3DE;stroke:#3B6D11;stroke-width:0.6}
+.c-green .t,.c-green .th{fill:#27500A}.c-green .ts{fill:#3B6D11}
+.c-blue>rect,.c-blue>circle,.c-blue>ellipse{fill:#E6F1FB;stroke:#185FA5;stroke-width:0.6}
+.c-blue .t,.c-blue .th{fill:#0C447C}.c-blue .ts{fill:#185FA5}
+.c-red>rect,.c-red>circle,.c-red>ellipse{fill:#FCEBEB;stroke:#A32D2D;stroke-width:0.6}
+.c-red .t,.c-red .th{fill:#791F1F}.c-red .ts{fill:#A32D2D}
+.c-pink>rect,.c-pink>circle,.c-pink>ellipse{fill:#FBEAF0;stroke:#993556;stroke-width:0.6}
+.c-pink .t,.c-pink .th{fill:#72243E}.c-pink .ts{fill:#993556}
+</style>
+<rect x="0" y="0" width="680" height="676" fill="#ffffff"/>
+
+<g class="c-gray"><rect x="44" y="46" width="14" height="14" rx="3"/></g>
+<text class="ts" x="64" y="57">pipeline stage</text>
+<g class="c-teal"><rect x="186" y="46" width="14" height="14" rx="3"/></g>
+<text class="ts" x="206" y="57">guard — exists</text>
+<g class="c-amber"><rect x="330" y="46" width="14" height="14" rx="3"/></g>
+<text class="ts" x="350" y="57">guard — partial / needs infra</text>
+
+<g class="c-gray"><rect x="48" y="96" width="248" height="40" rx="6"/><text class="th" x="172" y="113" text-anchor="middle">question</text><text class="ts" x="172" y="128" text-anchor="middle">from user</text></g>
+<line class="arr" x1="172" y1="136" x2="172" y2="176"/>
+<g class="c-gray"><rect x="48" y="176" width="248" height="40" rx="6"/><text class="th" x="172" y="193" text-anchor="middle">plan + route</text><text class="ts" x="172" y="208" text-anchor="middle">Sonnet · Haiku</text></g>
+<line class="arr" x1="172" y1="216" x2="172" y2="256"/>
+<g class="c-gray"><rect x="48" y="256" width="248" height="40" rx="6"/><text class="th" x="172" y="273" text-anchor="middle">execute (fan-out)</text><text class="ts" x="172" y="288" text-anchor="middle">search · scrape · tool</text></g>
+<line class="arr" x1="172" y1="296" x2="172" y2="336"/>
+<g class="c-gray"><rect x="48" y="336" width="248" height="40" rx="6"/><text class="th" x="172" y="353" text-anchor="middle">retrieved evidence</text><text class="ts" x="172" y="368" text-anchor="middle">scored batches</text></g>
+<line class="arr" x1="172" y1="376" x2="172" y2="416"/>
+<g class="c-gray"><rect x="48" y="416" width="248" height="40" rx="6"/><text class="th" x="172" y="433" text-anchor="middle">synthesize</text><text class="ts" x="172" y="448" text-anchor="middle">Opus, cited</text></g>
+<line class="arr" x1="172" y1="456" x2="172" y2="496"/>
+<g class="c-gray"><rect x="48" y="496" width="248" height="40" rx="6"/><text class="th" x="172" y="513" text-anchor="middle">answer</text><text class="ts" x="172" y="528" text-anchor="middle">to user</text></g>
+
+<line x1="296" y1="156" x2="348" y2="156" stroke="#888780" stroke-width="0.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+<g class="c-teal"><rect x="348" y="134" width="284" height="44" rx="6"/><text class="th" x="362" y="153">input filter</text><text class="ts" x="362" y="168">reject oversized · redact secrets from log</text></g>
+
+<line x1="296" y1="236" x2="348" y2="236" stroke="#888780" stroke-width="0.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+<g class="c-teal"><rect x="348" y="214" width="284" height="44" rx="6"/><text class="th" x="362" y="233">tool gate</text><text class="ts" x="362" y="248">allowlist + validate args vs schema</text></g>
+
+<line x1="296" y1="316" x2="348" y2="316" stroke="#888780" stroke-width="0.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+<g class="c-amber"><rect x="348" y="294" width="284" height="44" rx="6"/><text class="th" x="362" y="313">identity + domain gate</text><text class="ts" x="362" y="328">SSRF ✓ · per-user OBO partial</text></g>
+
+<line x1="296" y1="396" x2="348" y2="396" stroke="#888780" stroke-width="0.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+<g class="c-teal"><rect x="348" y="374" width="284" height="44" rx="6"/><text class="th" x="362" y="393">injection isolation</text><text class="ts" x="362" y="408">untrusted fences + defuse filter</text></g>
+
+<line x1="296" y1="476" x2="348" y2="476" stroke="#888780" stroke-width="0.5" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+<g class="c-teal"><rect x="348" y="454" width="284" height="44" rx="6"/><text class="th" x="362" y="473">output guard</text><text class="ts" x="362" y="488">citations · redaction · faithfulness eval</text></g>
+
+<rect x="40" y="560" width="592" height="96" rx="10" fill="none" stroke="#B4B2A9" stroke-width="0.5" stroke-dasharray="4 4"/>
+<text class="th" x="52" y="580">cross-cutting (spans the whole pipeline)</text>
+<g class="c-teal"><rect x="52" y="592" width="140" height="48" rx="6"/><text class="th" x="122" y="613" text-anchor="middle">cost + loop caps</text><text class="ts" x="122" y="628" text-anchor="middle">CostTracker · max_iter</text></g>
+<g class="c-teal"><rect x="196" y="592" width="140" height="48" rx="6"/><text class="th" x="266" y="613" text-anchor="middle">audit log</text><text class="ts" x="266" y="628" text-anchor="middle">JSONL per event</text></g>
+<g class="c-teal"><rect x="340" y="592" width="140" height="48" rx="6"/><text class="th" x="410" y="613" text-anchor="middle">cache isolation</text><text class="ts" x="410" y="628" text-anchor="middle">per-principal partition</text></g>
+<g class="c-teal"><rect x="484" y="592" width="140" height="48" rx="6"/><text class="th" x="554" y="613" text-anchor="middle">evals</text><text class="ts" x="554" y="628" text-anchor="middle">faithfulness --check gate</text></g>
+</svg>

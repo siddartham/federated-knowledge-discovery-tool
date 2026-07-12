@@ -1,0 +1,48 @@
+<svg width="680" height="300" viewBox="0 0 680 300" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Why OAuth alone fails across platforms and OBO fixes it</title>
+<desc>The token the chat app holds has audience chat-app, so calling the Governance API directly is rejected for wrong audience. On-behalf-of exchange at the IdP trades the user token for a new token with audience governance-api and subject still the user, which the Governance API then accepts and enforces the user's RBAC.</desc>
+<defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#888780"/></marker></defs>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}
+.ts{font-size:12px;fill:#5F5E5A}
+.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.arr{fill:none;stroke:#5F5E5A;stroke-width:1.5;marker-end:url(#arrow)}
+.box{fill:#FBFAF7;stroke:#888780;stroke-width:0.6}
+.node{cursor:pointer}
+.leader{fill:none;stroke:#B4B2A9;stroke-width:0.5;stroke-dasharray:2 2}
+.c-gray>rect,.c-gray>circle,.c-gray>ellipse{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:0.6}
+.c-gray .t,.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-purple>rect,.c-purple>circle,.c-purple>ellipse{fill:#EEEDFE;stroke:#534AB7;stroke-width:0.6}
+.c-purple .t,.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal>rect,.c-teal>circle,.c-teal>ellipse{fill:#E1F5EE;stroke:#0F6E56;stroke-width:0.6}
+.c-teal .t,.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+.c-amber>rect,.c-amber>circle,.c-amber>ellipse{fill:#FAEEDA;stroke:#854F0B;stroke-width:0.6}
+.c-amber .t,.c-amber .th{fill:#633806}.c-amber .ts{fill:#854F0B}
+.c-coral>rect,.c-coral>circle,.c-coral>ellipse{fill:#FAECE7;stroke:#993C1D;stroke-width:0.6}
+.c-coral .t,.c-coral .th{fill:#712B13}.c-coral .ts{fill:#993C1D}
+.c-green>rect,.c-green>circle,.c-green>ellipse{fill:#EAF3DE;stroke:#3B6D11;stroke-width:0.6}
+.c-green .t,.c-green .th{fill:#27500A}.c-green .ts{fill:#3B6D11}
+.c-blue>rect,.c-blue>circle,.c-blue>ellipse{fill:#E6F1FB;stroke:#185FA5;stroke-width:0.6}
+.c-blue .t,.c-blue .th{fill:#0C447C}.c-blue .ts{fill:#185FA5}
+.c-red>rect,.c-red>circle,.c-red>ellipse{fill:#FCEBEB;stroke:#A32D2D;stroke-width:0.6}
+.c-red .t,.c-red .th{fill:#791F1F}.c-red .ts{fill:#A32D2D}
+.c-pink>rect,.c-pink>circle,.c-pink>ellipse{fill:#FBEAF0;stroke:#993556;stroke-width:0.6}
+.c-pink .t,.c-pink .th{fill:#72243E}.c-pink .ts{fill:#993556}
+</style>
+<rect x="0" y="0" width="680" height="300" fill="#ffffff"/>
+
+<g class="c-purple"><rect x="20" y="40" width="230" height="42" rx="8"/><text class="t" x="135" y="60" text-anchor="middle">token you hold</text><text class="ts" x="135" y="74" text-anchor="middle">aud = chat-app · sub = you</text></g>
+<line x1="250" y1="61" x2="430" y2="61" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/><text class="ts" x="340" y="55" text-anchor="middle">call Governance API directly</text>
+<g class="c-red"><rect x="430" y="40" width="230" height="42" rx="8"/><text class="t" x="545" y="60" text-anchor="middle">❌ rejected</text><text class="ts" x="545" y="74" text-anchor="middle">aud ≠ governance-api</text></g>
+
+<line x1="135" y1="82" x2="135" y2="120" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<g class="c-blue"><rect x="20" y="120" width="640" height="46" rx="8"/><text class="t" x="340" y="140" text-anchor="middle">OBO / token-exchange at the IdP</text><text class="ts" x="340" y="156" text-anchor="middle">give it your (aud=chat-app) token → get back a NEW token: aud = governance-api, scope = governance.read, sub = you</text></g>
+
+<line x1="340" y1="166" x2="340" y2="200" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<g class="c-teal"><rect x="20" y="200" width="300" height="42" rx="8"/><text class="t" x="170" y="220" text-anchor="middle">call Governance API</text><text class="ts" x="170" y="234" text-anchor="middle">Bearer = the exchanged token</text></g>
+<line x1="320" y1="221" x2="430" y2="221" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<g class="c-green"><rect x="430" y="200" width="230" height="42" rx="8"/><text class="t" x="545" y="220" text-anchor="middle">✅ accepted — reads as YOU</text><text class="ts" x="545" y="234" text-anchor="middle">platform enforces your RBAC</text></g>
+
+<text class="ts" x="20" y="278" text-anchor="start">"OAuth, no OBO" = you're stuck at the top row: a token for your app that no other platform accepts.</text>
+</svg>

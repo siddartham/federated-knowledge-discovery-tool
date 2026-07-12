@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 296" role="img">
+<title>The dimensions factor along independent axes, which is what makes them orthogonal</title>
+<desc>The scorer's four dimensions factor into content-to-question role times source quality; confidence's four factor into amount of support, agreement, and precision.</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}.tsm{font-size:11px;fill:#5F5E5A}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.6}.c-gray .th{fill:#444441}.c-gray .ts,.c-gray .tsm{fill:#5F5E5A}
+.c-teal>rect{fill:#E1F5EE;stroke:#0F6E56;stroke-width:.6}.c-teal .th{fill:#085041}.c-teal .ts,.c-teal .tsm{fill:#0F6E56}
+.c-purple>rect{fill:#EEEDFE;stroke:#534AB7;stroke-width:.6}.c-purple .th{fill:#3C3489}.c-purple .ts,.c-purple .tsm{fill:#534AB7}
+</style>
+<rect x="0" y="0" width="680" height="296" fill="#ffffff"/>
+
+<text class="th" x="24" y="30" text-anchor="start" fill="#085041">scorer — content's role  ×  the source itself</text>
+<g class="c-teal"><rect x="24" y="44" width="360" height="72" rx="8"/><text class="tsm" x="204" y="62" text-anchor="middle">how the content relates to the question (its role)</text>
+<g class="c-gray"><rect x="36" y="74" width="104" height="30" rx="6"/><text class="tsm" x="88" y="88" text-anchor="middle">direct relevance</text><text class="tsm" x="88" y="100" text-anchor="middle">is it about it?</text></g>
+<g class="c-gray"><rect x="150" y="74" width="104" height="30" rx="6"/><text class="tsm" x="202" y="88" text-anchor="middle">answer potential</text><text class="tsm" x="202" y="100" text-anchor="middle">is it the answer?</text></g>
+<g class="c-gray"><rect x="264" y="74" width="108" height="30" rx="6"/><text class="tsm" x="318" y="88" text-anchor="middle">context value</text><text class="tsm" x="318" y="100" text-anchor="middle">does it support it?</text></g></g>
+<text class="th" x="404" y="86" text-anchor="middle">×</text>
+<g class="c-purple"><rect x="424" y="44" width="232" height="72" rx="8"/><text class="tsm" x="540" y="62" text-anchor="middle">a property of the source itself</text>
+<g class="c-gray"><rect x="470" y="74" width="140" height="30" rx="6"/><text class="tsm" x="540" y="88" text-anchor="middle">source quality</text><text class="tsm" x="540" y="100" text-anchor="middle">trust · recency</text></g></g>
+
+<text class="th" x="24" y="158" text-anchor="start" fill="#3C3489">confidence — amount  ×  agreement  ×  precision</text>
+<g class="c-purple"><rect x="24" y="172" width="256" height="72" rx="8"/><text class="tsm" x="152" y="190" text-anchor="middle">how much support exists</text>
+<g class="c-gray"><rect x="36" y="202" width="112" height="30" rx="6"/><text class="tsm" x="92" y="216" text-anchor="middle">explicit</text><text class="tsm" x="92" y="228" text-anchor="middle">direct statements</text></g>
+<g class="c-gray"><rect x="158" y="202" width="112" height="30" rx="6"/><text class="tsm" x="214" y="216" text-anchor="middle">implicit</text><text class="tsm" x="214" y="228" text-anchor="middle">circumstantial</text></g></g>
+<text class="th" x="298" y="214" text-anchor="middle">×</text>
+<g class="c-teal"><rect x="316" y="172" width="164" height="72" rx="8"/><text class="tsm" x="398" y="190" text-anchor="middle">do sources agree?</text>
+<g class="c-gray"><rect x="336" y="202" width="128" height="30" rx="6"/><text class="tsm" x="400" y="216" text-anchor="middle">consistency</text><text class="tsm" x="400" y="228" text-anchor="middle">a property of the set</text></g></g>
+<text class="th" x="498" y="214" text-anchor="middle">×</text>
+<g class="c-teal"><rect x="516" y="172" width="140" height="72" rx="8"/><text class="tsm" x="586" y="190" text-anchor="middle">how precise an answer?</text>
+<g class="c-gray"><rect x="530" y="202" width="112" height="30" rx="6"/><text class="tsm" x="586" y="216" text-anchor="middle">specificity</text><text class="tsm" x="586" y="228" text-anchor="middle">vague vs actionable</text></g></g>
+
+<text class="tsm" x="340" y="270" text-anchor="middle">× marks independent axes, not multiplication — the four scores combine by their equal-weighted mean (Σ ÷ 52)</text>
+<text class="tsm" x="340" y="286" text-anchor="middle">the test: push any one axis high while holding the others low — each still carries new information</text>
+</svg>

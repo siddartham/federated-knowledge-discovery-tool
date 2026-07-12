@@ -1,0 +1,61 @@
+<svg width="680" height="320" viewBox="0 0 680 320" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>A2A peer mesh versus hub and spoke</title>
+<desc>Left: a peer mesh where agents delegate to each other in a cycle with no central control, risking infinite loops. Right: hub and spoke where the central orchestrator calls leaf platform agents that answer their own data and do not re-delegate, so the orchestrator keeps the iteration cap, visited set, and budget.</desc>
+<defs>
+<marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#888780"/></marker>
+<marker id="ahR" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#E24B4A"/></marker>
+</defs>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}
+.ts{font-size:12px;fill:#5F5E5A}
+.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.arr{fill:none;stroke:#5F5E5A;stroke-width:1.5;marker-end:url(#arrow)}
+.box{fill:#FBFAF7;stroke:#888780;stroke-width:0.6}
+.node{cursor:pointer}
+.leader{fill:none;stroke:#B4B2A9;stroke-width:0.5;stroke-dasharray:2 2}
+.c-gray>rect,.c-gray>circle,.c-gray>ellipse{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:0.6}
+.c-gray .t,.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-purple>rect,.c-purple>circle,.c-purple>ellipse{fill:#EEEDFE;stroke:#534AB7;stroke-width:0.6}
+.c-purple .t,.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal>rect,.c-teal>circle,.c-teal>ellipse{fill:#E1F5EE;stroke:#0F6E56;stroke-width:0.6}
+.c-teal .t,.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+.c-amber>rect,.c-amber>circle,.c-amber>ellipse{fill:#FAEEDA;stroke:#854F0B;stroke-width:0.6}
+.c-amber .t,.c-amber .th{fill:#633806}.c-amber .ts{fill:#854F0B}
+.c-coral>rect,.c-coral>circle,.c-coral>ellipse{fill:#FAECE7;stroke:#993C1D;stroke-width:0.6}
+.c-coral .t,.c-coral .th{fill:#712B13}.c-coral .ts{fill:#993C1D}
+.c-green>rect,.c-green>circle,.c-green>ellipse{fill:#EAF3DE;stroke:#3B6D11;stroke-width:0.6}
+.c-green .t,.c-green .th{fill:#27500A}.c-green .ts{fill:#3B6D11}
+.c-blue>rect,.c-blue>circle,.c-blue>ellipse{fill:#E6F1FB;stroke:#185FA5;stroke-width:0.6}
+.c-blue .t,.c-blue .th{fill:#0C447C}.c-blue .ts{fill:#185FA5}
+.c-red>rect,.c-red>circle,.c-red>ellipse{fill:#FCEBEB;stroke:#A32D2D;stroke-width:0.6}
+.c-red .t,.c-red .th{fill:#791F1F}.c-red .ts{fill:#A32D2D}
+.c-pink>rect,.c-pink>circle,.c-pink>ellipse{fill:#FBEAF0;stroke:#993556;stroke-width:0.6}
+.c-pink .t,.c-pink .th{fill:#72243E}.c-pink .ts{fill:#993556}
+</style>
+<rect x="0" y="0" width="680" height="320" fill="#ffffff"/>
+<text class="t" x="150" y="34" text-anchor="middle">peer mesh ❌</text>
+<line x1="150" y1="200" x2="330" y2="200" stroke="#b4b2a9" stroke-width="1" stroke-dasharray="3 3"/>
+<line x1="118" y1="94" x2="80" y2="150" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ahR)"/>
+<line x1="90" y1="188" x2="210" y2="188" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ahR)"/>
+<line x1="222" y1="150" x2="182" y2="94" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ahR)"/>
+<g class="c-purple"><rect x="105" y="56" width="90" height="34" rx="8"/><text class="ts" x="150" y="77" text-anchor="middle">agent A</text></g>
+<g class="c-purple"><rect x="35" y="152" width="90" height="34" rx="8"/><text class="ts" x="80" y="173" text-anchor="middle">agent B</text></g>
+<g class="c-purple"><rect x="175" y="152" width="90" height="34" rx="8"/><text class="ts" x="220" y="173" text-anchor="middle">agent C</text></g>
+<text class="ts" x="150" y="230" text-anchor="middle">A→B→C→A · no central</text>
+<text class="ts" x="150" y="246" text-anchor="middle">loop control → cycles</text>
+
+<text class="t" x="510" y="34" text-anchor="middle">hub &amp; spoke ✅</text>
+<line x1="510" y1="90" x2="420" y2="150" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="510" y1="90" x2="510" y2="150" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="510" y1="90" x2="600" y2="150" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<g class="c-gray"><rect x="440" y="52" width="140" height="38" rx="8"/><text class="ts" x="510" y="70" text-anchor="middle">orchestrator (Columbo)</text><text class="ts" x="510" y="83" text-anchor="middle">holds the loop</text></g>
+<g class="c-purple"><rect x="378" y="152" width="84" height="34" rx="8"/><text class="ts" x="420" y="173" text-anchor="middle">Governance</text></g>
+<g class="c-purple"><rect x="468" y="152" width="84" height="34" rx="8"/><text class="ts" x="510" y="173" text-anchor="middle">Model</text></g>
+<g class="c-purple"><rect x="558" y="152" width="84" height="34" rx="8"/><text class="ts" x="600" y="173" text-anchor="middle">OnePipeline</text></g>
+<text class="ts" x="510" y="220" text-anchor="middle">leaves answer their own data,</text>
+<text class="ts" x="510" y="236" text-anchor="middle">don't re-delegate</text>
+
+<text class="ts" x="30" y="288" text-anchor="start">The cycle lives in the LINKED DATA (docs cross-link), not in A2A — you already tame it today with</text>
+<text class="ts" x="30" y="306" text-anchor="start">iteration/cost caps + a visited-set. Keep the central orchestrator; use A2A only for leaf calls.</text>
+</svg>

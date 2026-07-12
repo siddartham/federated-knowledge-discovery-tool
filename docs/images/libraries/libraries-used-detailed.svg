@@ -1,0 +1,140 @@
+<svg width="680" height="1206" viewBox="0 0 680 1206" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Columbo end-to-end orchestration with the semantic tool-router and the libraries used at each stage</title>
+<desc>A top-to-bottom pipeline: entry points, session setup, a repeating loop of acronym detection, semantic tool routing, plan, execute fan-out, score, restitch and a confidence gate, then synthesis, output, and cross-cutting infrastructure. Purple stages are Claude LLM calls, teal are retrieval/execution, gray are control and I/O. Gray pills name the library powering each stage.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}
+.ts{font-size:12px;fill:#5F5E5A}
+.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.arr{fill:none;stroke:#5F5E5A;stroke-width:1.5;marker-end:url(#arrow)}
+.box{fill:#FBFAF7;stroke:#888780;stroke-width:0.6}
+.node{cursor:pointer}
+.leader{fill:none;stroke:#B4B2A9;stroke-width:0.5;stroke-dasharray:2 2}
+.c-gray>rect,.c-gray>circle,.c-gray>ellipse{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:0.6}
+.c-gray .t,.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-purple>rect,.c-purple>circle,.c-purple>ellipse{fill:#EEEDFE;stroke:#534AB7;stroke-width:0.6}
+.c-purple .t,.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal>rect,.c-teal>circle,.c-teal>ellipse{fill:#E1F5EE;stroke:#0F6E56;stroke-width:0.6}
+.c-teal .t,.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+.c-amber>rect,.c-amber>circle,.c-amber>ellipse{fill:#FAEEDA;stroke:#854F0B;stroke-width:0.6}
+.c-amber .t,.c-amber .th{fill:#633806}.c-amber .ts{fill:#854F0B}
+.c-coral>rect,.c-coral>circle,.c-coral>ellipse{fill:#FAECE7;stroke:#993C1D;stroke-width:0.6}
+.c-coral .t,.c-coral .th{fill:#712B13}.c-coral .ts{fill:#993C1D}
+.c-green>rect,.c-green>circle,.c-green>ellipse{fill:#EAF3DE;stroke:#3B6D11;stroke-width:0.6}
+.c-green .t,.c-green .th{fill:#27500A}.c-green .ts{fill:#3B6D11}
+.c-blue>rect,.c-blue>circle,.c-blue>ellipse{fill:#E6F1FB;stroke:#185FA5;stroke-width:0.6}
+.c-blue .t,.c-blue .th{fill:#0C447C}.c-blue .ts{fill:#185FA5}
+.c-red>rect,.c-red>circle,.c-red>ellipse{fill:#FCEBEB;stroke:#A32D2D;stroke-width:0.6}
+.c-red .t,.c-red .th{fill:#791F1F}.c-red .ts{fill:#A32D2D}
+.c-pink>rect,.c-pink>circle,.c-pink>ellipse{fill:#FBEAF0;stroke:#993556;stroke-width:0.6}
+.c-pink .t,.c-pink .th{fill:#72243E}.c-pink .ts{fill:#993556}
+</style>
+<rect x="0" y="0" width="680" height="1206" fill="#ffffff"/>
+
+<g class="c-purple"><rect x="44" y="46" width="14" height="14" rx="3"/></g>
+<text class="ts" x="64" y="57">Claude LLM stage</text>
+<g class="c-teal"><rect x="196" y="46" width="14" height="14" rx="3"/></g>
+<text class="ts" x="216" y="57">retrieval / execution</text>
+<g class="c-gray"><rect x="356" y="46" width="14" height="14" rx="3"/></g>
+<text class="ts" x="376" y="57">control / I/O / infra</text>
+<g class="c-gray"><rect x="520" y="45" width="64" height="16" rx="8"/><text class="ts" x="552" y="57" text-anchor="middle">library</text></g>
+
+<rect x="40" y="78" width="600" height="108" rx="10" fill="none" stroke="#B4B2A9" stroke-width="0.5" stroke-dasharray="4 4"/>
+<text class="th" x="52" y="98">1 · entry points</text>
+<g class="c-gray"><rect x="52" y="108" width="132" height="40" rx="6"/><text class="th" x="118" y="125" text-anchor="middle">columbo ask</text><text class="ts" x="118" y="140" text-anchor="middle">one question</text></g>
+<g class="c-gray"><rect x="200" y="108" width="132" height="40" rx="6"/><text class="th" x="266" y="125" text-anchor="middle">interactive</text><text class="ts" x="266" y="140" text-anchor="middle">warm session</text></g>
+<g class="c-gray"><rect x="348" y="108" width="132" height="40" rx="6"/><text class="th" x="414" y="125" text-anchor="middle">desktop</text><text class="ts" x="414" y="140" text-anchor="middle">native webview</text></g>
+<g class="c-gray"><rect x="496" y="108" width="132" height="40" rx="6"/><text class="th" x="562" y="125" text-anchor="middle">chat UI</text><text class="ts" x="562" y="140" text-anchor="middle">browser chat</text></g>
+<g class="c-gray"><rect x="52" y="158" width="54" height="18" rx="9"/><text class="ts" x="79" y="171" text-anchor="middle">Typer</text></g>
+<g class="c-gray"><rect x="114" y="158" width="44" height="18" rx="9"/><text class="ts" x="136" y="171" text-anchor="middle">Rich</text></g>
+<g class="c-gray"><rect x="166" y="158" width="66" height="18" rx="9"/><text class="ts" x="199" y="171" text-anchor="middle">Chainlit</text></g>
+<g class="c-gray"><rect x="240" y="158" width="80" height="18" rx="9"/><text class="ts" x="280" y="171" text-anchor="middle">pywebview</text></g>
+<g class="c-gray"><rect x="328" y="158" width="90" height="18" rx="9"/><text class="ts" x="373" y="171" text-anchor="middle">FastAPI (opt)</text></g>
+
+<line class="arr" x1="340" y1="186" x2="340" y2="206"/>
+
+<rect x="40" y="206" width="600" height="108" rx="10" fill="none" stroke="#B4B2A9" stroke-width="0.5" stroke-dasharray="4 4"/>
+<text class="th" x="52" y="226">2 · session setup (dependency wiring)</text>
+<g class="c-gray"><rect x="52" y="236" width="132" height="40" rx="6"/><text class="th" x="118" y="253" text-anchor="middle">CacheStore</text><text class="ts" x="118" y="268" text-anchor="middle">disk cache</text></g>
+<g class="c-gray"><rect x="200" y="236" width="132" height="40" rx="6"/><text class="th" x="266" y="253" text-anchor="middle">BrowserSession</text><text class="ts" x="266" y="268" text-anchor="middle">Playwright ctx</text></g>
+<g class="c-gray"><rect x="348" y="236" width="132" height="40" rx="6"/><text class="th" x="414" y="253" text-anchor="middle">Registry</text><text class="ts" x="414" y="268" text-anchor="middle">6 sources</text></g>
+<g class="c-gray"><rect x="496" y="236" width="132" height="40" rx="6"/><text class="th" x="562" y="253" text-anchor="middle">Claude client</text><text class="ts" x="562" y="268" text-anchor="middle">Sonnet Haiku Opus</text></g>
+<g class="c-gray"><rect x="52" y="286" width="68" height="18" rx="9"/><text class="ts" x="86" y="299" text-anchor="middle">diskcache</text></g>
+<g class="c-gray"><rect x="128" y="286" width="72" height="18" rx="9"/><text class="ts" x="164" y="299" text-anchor="middle">Playwright</text></g>
+<g class="c-gray"><rect x="208" y="286" width="58" height="18" rx="9"/><text class="ts" x="237" y="299" text-anchor="middle">tomllib</text></g>
+<g class="c-gray"><rect x="274" y="286" width="104" height="18" rx="9"/><text class="ts" x="326" y="299" text-anchor="middle">Anthropic SDK</text></g>
+<g class="c-gray"><rect x="386" y="286" width="70" height="18" rx="9"/><text class="ts" x="421" y="299" text-anchor="middle">mcp SDK</text></g>
+
+<line class="arr" x1="340" y1="314" x2="340" y2="338"/>
+
+<rect x="40" y="338" width="600" height="540" rx="10" fill="none" stroke="#888780" stroke-width="0.5" stroke-dasharray="6 4"/>
+<text class="th" x="56" y="358">3 · orchestration loop — repeat until confident or max_iterations</text>
+
+<g class="c-teal"><rect x="64" y="372" width="252" height="42" rx="6"/><text class="th" x="76" y="390">3a · acronym detection</text><text class="ts" x="76" y="405">acronyms → dictionary + cache</text></g>
+<g class="c-gray"><rect x="344" y="384" width="72" height="18" rx="9"/><text class="ts" x="380" y="397" text-anchor="middle">Dictionary</text></g>
+<g class="c-gray"><rect x="422" y="384" width="68" height="18" rx="9"/><text class="ts" x="456" y="397" text-anchor="middle">diskcache</text></g>
+<line class="arr" x1="190" y1="414" x2="190" y2="432"/>
+
+<g class="c-purple"><rect x="64" y="432" width="252" height="42" rx="6"/><text class="th" x="76" y="450">3b · route tools · Haiku</text><text class="ts" x="76" y="465">list_tools → semantic top-K</text></g>
+<g class="c-gray"><rect x="344" y="444" width="52" height="18" rx="9"/><text class="ts" x="370" y="457" text-anchor="middle">Jinja2</text></g>
+<g class="c-gray"><rect x="404" y="444" width="116" height="18" rx="9"/><text class="ts" x="462" y="457" text-anchor="middle">Anthropic · Haiku</text></g>
+<line class="arr" x1="190" y1="474" x2="190" y2="492"/>
+
+<g class="c-purple"><rect x="64" y="492" width="252" height="42" rx="6"/><text class="th" x="76" y="510">3c · plan · Claude Sonnet</text><text class="ts" x="76" y="525">orchestrate.j2 → Actions</text></g>
+<g class="c-gray"><rect x="344" y="504" width="52" height="18" rx="9"/><text class="ts" x="370" y="517" text-anchor="middle">Jinja2</text></g>
+<g class="c-gray"><rect x="404" y="504" width="66" height="18" rx="9"/><text class="ts" x="437" y="517" text-anchor="middle">Pydantic</text></g>
+<g class="c-gray"><rect x="478" y="504" width="120" height="18" rx="9"/><text class="ts" x="538" y="517" text-anchor="middle">Anthropic · Sonnet</text></g>
+<line class="arr" x1="190" y1="534" x2="190" y2="550"/>
+
+<g class="c-teal"><rect x="64" y="550" width="252" height="42" rx="6"/><text class="th" x="76" y="568">3d · execute (fan-out)</text><text class="ts" x="76" y="583">runs all actions in parallel</text></g>
+<g class="c-gray"><rect x="344" y="562" width="100" height="18" rx="9"/><text class="ts" x="394" y="575" text-anchor="middle">asyncio.gather</text></g>
+<line class="arr" x1="190" y1="592" x2="190" y2="608"/>
+
+<g class="c-teal"><rect x="64" y="608" width="132" height="56" rx="6"/><text class="th" x="130" y="631" text-anchor="middle">searches</text><text class="ts" x="130" y="648" text-anchor="middle">→ 6 sources</text></g>
+<g class="c-teal"><rect x="206" y="608" width="132" height="56" rx="6"/><text class="th" x="272" y="631" text-anchor="middle">scrapes</text><text class="ts" x="272" y="648" text-anchor="middle">→ Playwright</text></g>
+<g class="c-teal"><rect x="348" y="608" width="132" height="56" rx="6"/><text class="th" x="414" y="631" text-anchor="middle">lookups</text><text class="ts" x="414" y="648" text-anchor="middle">→ exact ids</text></g>
+<g class="c-teal"><rect x="490" y="608" width="132" height="56" rx="6"/><text class="th" x="556" y="631" text-anchor="middle">tool_calls</text><text class="ts" x="556" y="648" text-anchor="middle">→ MCP tools</text></g>
+<g class="c-gray"><rect x="64" y="670" width="72" height="16" rx="8"/><text class="ts" x="100" y="682" text-anchor="middle">Playwright</text></g>
+<g class="c-gray"><rect x="144" y="670" width="76" height="16" rx="8"/><text class="ts" x="182" y="682" text-anchor="middle">REST APIs</text></g>
+<g class="c-gray"><rect x="228" y="670" width="66" height="16" rx="8"/><text class="ts" x="261" y="682" text-anchor="middle">mcp SDK</text></g>
+<g class="c-gray"><rect x="302" y="670" width="92" height="16" rx="8"/><text class="ts" x="348" y="682" text-anchor="middle">select_tools</text></g>
+<line class="arr" x1="190" y1="664" x2="190" y2="704"/>
+
+<g class="c-purple"><rect x="64" y="704" width="252" height="42" rx="6"/><text class="th" x="76" y="722">3e · score · Claude Haiku</text><text class="ts" x="76" y="737">score.j2 → ScoreResult</text></g>
+<g class="c-gray"><rect x="344" y="716" width="116" height="18" rx="9"/><text class="ts" x="402" y="729" text-anchor="middle">Anthropic · Haiku</text></g>
+<g class="c-gray"><rect x="468" y="716" width="66" height="18" rx="9"/><text class="ts" x="501" y="729" text-anchor="middle">Pydantic</text></g>
+<line class="arr" x1="190" y1="746" x2="190" y2="762"/>
+
+<g class="c-purple"><rect x="64" y="762" width="252" height="42" rx="6"/><text class="th" x="76" y="780">3f · restitch · Claude Haiku</text><text class="ts" x="76" y="795">condense to running summary</text></g>
+<g class="c-gray"><rect x="344" y="774" width="116" height="18" rx="9"/><text class="ts" x="402" y="787" text-anchor="middle">Anthropic · Haiku</text></g>
+<line class="arr" x1="190" y1="804" x2="190" y2="820"/>
+
+<g class="c-gray"><rect x="64" y="820" width="252" height="42" rx="6"/><text class="th" x="76" y="838">3g · confidence gate</text><text class="ts" x="76" y="853">loop back ↺ or synthesize</text></g>
+
+<path d="M64 841 L50 841 L50 453 L64 453" fill="none" stroke="#888780" stroke-width="0.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<text class="ts" x="57" y="650" transform="rotate(-90 57 650)" text-anchor="middle">next iteration ↺</text>
+
+<path d="M190 862 L190 898" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text class="ts" x="214" y="884">✓ confident</text>
+
+<g class="c-purple"><rect x="64" y="898" width="252" height="44" rx="6"/><text class="th" x="76" y="917">4 · synthesize · Claude Opus</text><text class="ts" x="76" y="932">synthesize.j2 → cited answer</text></g>
+<g class="c-gray"><rect x="344" y="912" width="52" height="18" rx="9"/><text class="ts" x="370" y="925" text-anchor="middle">Jinja2</text></g>
+<g class="c-gray"><rect x="404" y="912" width="112" height="18" rx="9"/><text class="ts" x="460" y="925" text-anchor="middle">Anthropic · Opus</text></g>
+<line class="arr" x1="190" y1="942" x2="190" y2="960"/>
+
+<g class="c-gray"><rect x="64" y="960" width="252" height="44" rx="6"/><text class="th" x="76" y="979">5 · answer to user</text><text class="ts" x="76" y="994">cited markdown / json</text></g>
+<g class="c-gray"><rect x="344" y="974" width="44" height="18" rx="9"/><text class="ts" x="366" y="987" text-anchor="middle">Rich</text></g>
+<g class="c-gray"><rect x="396" y="974" width="64" height="18" rx="9"/><text class="ts" x="428" y="987" text-anchor="middle">Chainlit</text></g>
+<g class="c-gray"><rect x="468" y="974" width="90" height="18" rx="9"/><text class="ts" x="513" y="987" text-anchor="middle">FastAPI (opt)</text></g>
+
+<rect x="40" y="1028" width="600" height="158" rx="10" fill="none" stroke="#B4B2A9" stroke-width="0.5" stroke-dasharray="4 4"/>
+<text class="th" x="52" y="1048">cross-cutting (spans every stage)</text>
+<g class="c-gray"><rect x="52" y="1056" width="180" height="34" rx="6"/><text class="th" x="142" y="1071" text-anchor="middle">config</text><text class="ts" x="142" y="1084" text-anchor="middle">tomllib · SETTINGS</text></g>
+<g class="c-gray"><rect x="248" y="1056" width="180" height="34" rx="6"/><text class="th" x="338" y="1071" text-anchor="middle">events</text><text class="ts" x="338" y="1084" text-anchor="middle">emitter → JSONL</text></g>
+<g class="c-gray"><rect x="444" y="1056" width="184" height="34" rx="6"/><text class="th" x="536" y="1071" text-anchor="middle">cost tracker</text><text class="ts" x="536" y="1084" text-anchor="middle">per-call USD cap</text></g>
+<g class="c-gray"><rect x="52" y="1098" width="180" height="34" rx="6"/><text class="th" x="142" y="1113" text-anchor="middle">cache</text><text class="ts" x="142" y="1126" text-anchor="middle">diskcache · 4 ns</text></g>
+<g class="c-gray"><rect x="248" y="1098" width="180" height="34" rx="6"/><text class="th" x="338" y="1113" text-anchor="middle">evals</text><text class="ts" x="338" y="1126" text-anchor="middle">LLM-judge · faithfulness</text></g>
+<g class="c-gray"><rect x="444" y="1098" width="184" height="34" rx="6"/><text class="th" x="536" y="1113" text-anchor="middle">quality gates</text><text class="ts" x="536" y="1126" text-anchor="middle">ruff · mypy · pytest</text></g>
+<g class="c-gray"><rect x="52" y="1140" width="576" height="34" rx="6"/><text class="th" x="340" y="1155" text-anchor="middle">guardrails</text><text class="ts" x="340" y="1168" text-anchor="middle">input filter · tool gate · injection defuse · secret redaction · SSRF · per-principal cache</text></g>
+</svg>

@@ -1,0 +1,70 @@
+site_name: Columbo
+site_description: A CLI agent that answers enterprise questions across Slack, Confluence, GitHub, Jira, and Drive with cited answers.
+docs_dir: docs
+repo_url: https://github.com/siddartham/federated-knowledge-discovery-tool
+repo_name: federated-knowledge-discovery-tool
+
+theme:
+  name: material
+  icon:
+    logo: material/magnify
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - navigation.tracking
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.snippets
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - First principles: first-principles.md
+  - Architecture:
+      - Call tree: call_tree.md
+      - Request trace: request_simulation.md
+      - Scoring & confidence: scoring-and-confidence.md
+      - Evaluation & validation: evaluation.md
+      - A/B testing changes: ab-testing.md
+      - Libraries used: libraries-used.md
+      - Guardrails: guardrails.md
+      - Permalinks: permalinks.md
+  - Auth:
+      - Foundations: auth-basics.md
+      - Deployment flows: columbo-auth-flow.md
+  - Scaling & integration:
+      - MCP / A2A adoption: mcp-a2a-adoption.md
+      - Enterprise scale: enterprise-solution.md
+      - CLI to microservice: cli-to-microservice.md

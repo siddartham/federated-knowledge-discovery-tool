@@ -1,0 +1,83 @@
+<svg width="680" height="492" viewBox="0 0 680 492" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Registry.search versus Registry.lookup, side by side</title>
+<desc>Two parallel columns compare Registry.search and Registry.lookup. They share the cache-check, lazy init, source call, and cache-write skeleton, but differ in three design points marked delta: search raises KeyError for an unknown source while lookup returns None if the source is missing or not lookup-capable; search reads its cache plainly while lookup treats a cached not-found sentinel as None; and lookup writes a not-found sentinel on a miss so absent handles are not re-queried. The init step is identical.</desc>
+<defs>
+<marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#888780"/></marker>
+</defs>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}
+.ts{font-size:12px;fill:#5F5E5A}
+.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.arr{fill:none;stroke:#5F5E5A;stroke-width:1.5;marker-end:url(#arrow)}
+.box{fill:#FBFAF7;stroke:#888780;stroke-width:0.6}
+.node{cursor:pointer}
+.leader{fill:none;stroke:#B4B2A9;stroke-width:0.5;stroke-dasharray:2 2}
+.c-gray>rect,.c-gray>circle,.c-gray>ellipse{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:0.6}
+.c-gray .t,.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-purple>rect,.c-purple>circle,.c-purple>ellipse{fill:#EEEDFE;stroke:#534AB7;stroke-width:0.6}
+.c-purple .t,.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal>rect,.c-teal>circle,.c-teal>ellipse{fill:#E1F5EE;stroke:#0F6E56;stroke-width:0.6}
+.c-teal .t,.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+.c-amber>rect,.c-amber>circle,.c-amber>ellipse{fill:#FAEEDA;stroke:#854F0B;stroke-width:0.6}
+.c-amber .t,.c-amber .th{fill:#633806}.c-amber .ts{fill:#854F0B}
+.c-coral>rect,.c-coral>circle,.c-coral>ellipse{fill:#FAECE7;stroke:#993C1D;stroke-width:0.6}
+.c-coral .t,.c-coral .th{fill:#712B13}.c-coral .ts{fill:#993C1D}
+.c-green>rect,.c-green>circle,.c-green>ellipse{fill:#EAF3DE;stroke:#3B6D11;stroke-width:0.6}
+.c-green .t,.c-green .th{fill:#27500A}.c-green .ts{fill:#3B6D11}
+.c-blue>rect,.c-blue>circle,.c-blue>ellipse{fill:#E6F1FB;stroke:#185FA5;stroke-width:0.6}
+.c-blue .t,.c-blue .th{fill:#0C447C}.c-blue .ts{fill:#185FA5}
+.c-red>rect,.c-red>circle,.c-red>ellipse{fill:#FCEBEB;stroke:#A32D2D;stroke-width:0.6}
+.c-red .t,.c-red .th{fill:#791F1F}.c-red .ts{fill:#A32D2D}
+.c-pink>rect,.c-pink>circle,.c-pink>ellipse{fill:#FBEAF0;stroke:#993556;stroke-width:0.6}
+.c-pink .t,.c-pink .th{fill:#72243E}.c-pink .ts{fill:#993556}
+</style>
+<rect x="0" y="0" width="680" height="492" fill="#ffffff"/>
+
+<line x1="180" y1="76" x2="180" y2="92" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="180" y1="132" x2="180" y2="148" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="180" y1="182" x2="180" y2="198" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="180" y1="238" x2="180" y2="254" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="180" y1="286" x2="180" y2="302" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="180" y1="340" x2="180" y2="356" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="180" y1="396" x2="180" y2="412" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+
+<line x1="500" y1="76" x2="500" y2="92" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="500" y1="132" x2="500" y2="148" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="500" y1="182" x2="500" y2="198" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="500" y1="238" x2="500" y2="254" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="500" y1="286" x2="500" y2="302" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="500" y1="340" x2="500" y2="356" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+<line x1="500" y1="396" x2="500" y2="412" stroke="#888780" stroke-width="1.4" marker-end="url(#ah)"/>
+
+<g class="c-amber"><circle cx="340" cy="112" r="11"/><text class="ts" x="340" y="116" text-anchor="middle">Δ</text></g>
+<g class="c-amber"><circle cx="340" cy="218" r="11"/><text class="ts" x="340" y="222" text-anchor="middle">Δ</text></g>
+<g class="c-amber"><circle cx="340" cy="376" r="11"/><text class="ts" x="340" y="380" text-anchor="middle">Δ</text></g>
+<g class="c-green"><circle cx="340" cy="270" r="11"/><text class="ts" x="340" y="274" text-anchor="middle">=</text></g>
+
+<g class="c-teal"><rect x="40" y="44" width="280" height="32" rx="8"/><text class="t" x="180" y="64" text-anchor="middle">Registry.search(source, query, opts)</text></g>
+<g class="c-purple"><rect x="360" y="44" width="280" height="32" rx="8"/><text class="t" x="500" y="64" text-anchor="middle">Registry.lookup(source, term)</text></g>
+
+<g class="c-gray"><rect x="40" y="92" width="280" height="40" rx="8"/><text class="ts" x="180" y="110" text-anchor="middle">membership check</text><text class="ts" x="180" y="125" text-anchor="middle">unknown source → raise KeyError</text></g>
+<g class="c-gray"><rect x="360" y="92" width="280" height="40" rx="8"/><text class="ts" x="500" y="110" text-anchor="middle">membership check</text><text class="ts" x="500" y="125" text-anchor="middle">missing / not LookupCapable → None</text></g>
+
+<g class="c-gray"><rect x="40" y="148" width="280" height="34" rx="8"/><text class="ts" x="180" y="169" text-anchor="middle">key = source | query | limit | days</text></g>
+<g class="c-gray"><rect x="360" y="148" width="280" height="34" rx="8"/><text class="ts" x="500" y="169" text-anchor="middle">key = source / term</text></g>
+
+<g class="c-blue"><rect x="40" y="198" width="280" height="40" rx="8"/><text class="ts" x="180" y="216" text-anchor="middle">search_cache.get(key)</text><text class="ts" x="180" y="231" text-anchor="middle">hit → return results</text></g>
+<g class="c-blue"><rect x="360" y="198" width="280" height="40" rx="8"/><text class="ts" x="500" y="216" text-anchor="middle">lookup_cache.get(key)</text><text class="ts" x="500" y="231" text-anchor="middle">NOT_FOUND → None · else hit</text></g>
+
+<g class="c-gray"><rect x="40" y="254" width="280" height="32" rx="8"/><text class="ts" x="180" y="274" text-anchor="middle">_ensure_initialized(source)</text></g>
+<g class="c-gray"><rect x="360" y="254" width="280" height="32" rx="8"/><text class="ts" x="500" y="274" text-anchor="middle">_ensure_initialized(source)</text></g>
+
+<g class="c-teal"><rect x="40" y="302" width="280" height="38" rx="8"/><text class="ts" x="180" y="320" text-anchor="middle">source.search(query, opts)</text><text class="ts" x="180" y="335" text-anchor="middle">native query — all sources</text></g>
+<g class="c-teal"><rect x="360" y="302" width="280" height="38" rx="8"/><text class="ts" x="500" y="320" text-anchor="middle">source.lookup(term)</text><text class="ts" x="500" y="335" text-anchor="middle">exact id — opt-in sources</text></g>
+
+<g class="c-blue"><rect x="40" y="356" width="280" height="40" rx="8"/><text class="ts" x="180" y="374" text-anchor="middle">search_cache.set(results)</text><text class="ts" x="180" y="389" text-anchor="middle">ttl 6h</text></g>
+<g class="c-blue"><rect x="360" y="356" width="280" height="40" rx="8"/><text class="ts" x="500" y="374" text-anchor="middle">lookup_cache.set(result OR NOT_FOUND)</text><text class="ts" x="500" y="389" text-anchor="middle">ttl 24h · caches the miss</text></g>
+
+<g class="c-gray"><rect x="40" y="412" width="280" height="30" rx="8"/><text class="t" x="180" y="431" text-anchor="middle">→ list[Result]</text></g>
+<g class="c-gray"><rect x="360" y="412" width="280" height="30" rx="8"/><text class="t" x="500" y="431" text-anchor="middle">→ Result | None</text></g>
+
+<text class="ts" x="40" y="466" text-anchor="start">Δ = design difference (beyond I/O): opt-in membership · not-found sentinel on read and write.   = : identical step.</text>
+</svg>

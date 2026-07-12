@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 486" role="img">
+<title>The four guardrail strategies derived from first principles, each with Columbo's concrete guards</title>
+<desc>Four cards: distrust the input, contain the power, isolate the blast radius, and verify plus watch. Each lists the concrete guards. A footer states the fail-closed on safety, fail-open on quality rule.</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:0.6}.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+</style>
+<rect x="0" y="0" width="680" height="486" fill="#ffffff"/>
+
+<rect x="30" y="30" width="298" height="176" rx="12" fill="none" stroke="#D85A30" stroke-width="1"/>
+<text class="th" x="46" y="58" text-anchor="start" fill="#712B13">1 · distrust the input</text>
+<text class="ts" x="46" y="80" text-anchor="start">shrink what incoming text is allowed</text>
+<text class="ts" x="46" y="98" text-anchor="start">to do — treat it as data, not orders</text>
+<g class="c-gray"><rect x="46" y="118" width="80" height="20" rx="10"/><text class="ts" x="86" y="132" text-anchor="middle">input filter</text></g>
+<g class="c-gray"><rect x="132" y="118" width="120" height="20" rx="10"/><text class="ts" x="192" y="132" text-anchor="middle">injection isolation</text></g>
+<g class="c-gray"><rect x="46" y="144" width="206" height="20" rx="10"/><text class="ts" x="149" y="158" text-anchor="middle">untrusted fences · defuse · redact secrets</text></g>
+
+<rect x="352" y="30" width="298" height="176" rx="12" fill="none" stroke="#BA7517" stroke-width="1"/>
+<text class="th" x="368" y="58" text-anchor="start" fill="#633806">2 · contain the power</text>
+<text class="ts" x="368" y="80" text-anchor="start">the agent may only reach and do</text>
+<text class="ts" x="368" y="98" text-anchor="start">what is explicitly allowlisted</text>
+<g class="c-gray"><rect x="368" y="118" width="184" height="20" rx="10"/><text class="ts" x="460" y="132" text-anchor="middle">tool gate · allowlist + arg schema</text></g>
+<g class="c-gray"><rect x="368" y="144" width="96" height="20" rx="10"/><text class="ts" x="416" y="158" text-anchor="middle">SSRF block</text></g>
+<g class="c-gray"><rect x="470" y="144" width="120" height="20" rx="10"/><text class="ts" x="530" y="158" text-anchor="middle">read-only tools</text></g>
+
+<rect x="30" y="222" width="298" height="176" rx="12" fill="none" stroke="#378ADD" stroke-width="1"/>
+<text class="th" x="46" y="250" text-anchor="start" fill="#0C447C">3 · isolate the blast radius</text>
+<text class="ts" x="46" y="272" text-anchor="start">one user or one run can't harm</text>
+<text class="ts" x="46" y="290" text-anchor="start">another — or run away with cost</text>
+<g class="c-gray"><rect x="46" y="310" width="150" height="20" rx="10"/><text class="ts" x="121" y="324" text-anchor="middle">per-principal cache</text></g>
+<g class="c-gray"><rect x="46" y="336" width="140" height="20" rx="10"/><text class="ts" x="116" y="350" text-anchor="middle">cost + loop caps</text></g>
+
+<rect x="352" y="222" width="298" height="176" rx="12" fill="none" stroke="#1D9E75" stroke-width="1"/>
+<text class="th" x="368" y="250" text-anchor="start" fill="#085041">4 · verify, and always watch</text>
+<text class="ts" x="368" y="272" text-anchor="start">check the answer before it ships;</text>
+<text class="ts" x="368" y="290" text-anchor="start">record every step so you can see</text>
+<g class="c-gray"><rect x="368" y="310" width="76" height="20" rx="10"/><text class="ts" x="406" y="324" text-anchor="middle">citations</text></g>
+<g class="c-gray"><rect x="450" y="310" width="130" height="20" rx="10"/><text class="ts" x="515" y="324" text-anchor="middle">secret redaction</text></g>
+<g class="c-gray"><rect x="368" y="336" width="128" height="20" rx="10"/><text class="ts" x="432" y="350" text-anchor="middle">faithfulness eval</text></g>
+<g class="c-gray"><rect x="502" y="336" width="80" height="20" rx="10"/><text class="ts" x="542" y="350" text-anchor="middle">audit log</text></g>
+
+<g class="c-gray"><rect x="30" y="418" width="620" height="46" rx="10"/><text class="th" x="46" y="446" text-anchor="start">when unsure:  fail-closed on safety (block) · fail-open on quality (degrade, don't crash)</text></g>
+</svg>

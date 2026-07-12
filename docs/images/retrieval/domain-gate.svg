@@ -1,0 +1,80 @@
+<svg width="680" height="476" viewBox="0 0 680 476" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>DomainGate.allows decision tree</title>
+<desc>DomainGate.allows first runs a non-overridable SSRF precheck (ssrf_reason) that DROPs non-http schemes and private/loopback/metadata hosts, then extracts the URL host, allows silently if the host is on the allow set, denies silently if on the deny set, and for an unknown host takes a lock and prompts the user; a yes answer adds to allow and persists then allows, an N answer adds to deny and persists then skips the scrape, and an abort or interrupt raises ErrAborted which cleanly ends the run. Allow and deny sets persist to domains.json.</desc>
+<defs>
+<marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#888780"/></marker>
+<marker id="ahG" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#639922"/></marker>
+<marker id="ahR" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#E24B4A"/></marker>
+</defs>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}
+.ts{font-size:12px;fill:#5F5E5A}
+.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.arr{fill:none;stroke:#5F5E5A;stroke-width:1.5;marker-end:url(#arrow)}
+.box{fill:#FBFAF7;stroke:#888780;stroke-width:0.6}
+.node{cursor:pointer}
+.leader{fill:none;stroke:#B4B2A9;stroke-width:0.5;stroke-dasharray:2 2}
+.c-gray>rect,.c-gray>circle,.c-gray>ellipse{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:0.6}
+.c-gray .t,.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-purple>rect,.c-purple>circle,.c-purple>ellipse{fill:#EEEDFE;stroke:#534AB7;stroke-width:0.6}
+.c-purple .t,.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal>rect,.c-teal>circle,.c-teal>ellipse{fill:#E1F5EE;stroke:#0F6E56;stroke-width:0.6}
+.c-teal .t,.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+.c-amber>rect,.c-amber>circle,.c-amber>ellipse{fill:#FAEEDA;stroke:#854F0B;stroke-width:0.6}
+.c-amber .t,.c-amber .th{fill:#633806}.c-amber .ts{fill:#854F0B}
+.c-coral>rect,.c-coral>circle,.c-coral>ellipse{fill:#FAECE7;stroke:#993C1D;stroke-width:0.6}
+.c-coral .t,.c-coral .th{fill:#712B13}.c-coral .ts{fill:#993C1D}
+.c-green>rect,.c-green>circle,.c-green>ellipse{fill:#EAF3DE;stroke:#3B6D11;stroke-width:0.6}
+.c-green .t,.c-green .th{fill:#27500A}.c-green .ts{fill:#3B6D11}
+.c-blue>rect,.c-blue>circle,.c-blue>ellipse{fill:#E6F1FB;stroke:#185FA5;stroke-width:0.6}
+.c-blue .t,.c-blue .th{fill:#0C447C}.c-blue .ts{fill:#185FA5}
+.c-red>rect,.c-red>circle,.c-red>ellipse{fill:#FCEBEB;stroke:#A32D2D;stroke-width:0.6}
+.c-red .t,.c-red .th{fill:#791F1F}.c-red .ts{fill:#A32D2D}
+.c-pink>rect,.c-pink>circle,.c-pink>ellipse{fill:#FBEAF0;stroke:#993556;stroke-width:0.6}
+.c-pink .t,.c-pink .th{fill:#72243E}.c-pink .ts{fill:#993556}
+</style>
+<rect x="0" y="0" width="680" height="476" fill="#ffffff"/>
+
+<line x1="340" y1="72" x2="340" y2="86" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="340" y1="118" x2="340" y2="134" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="445" y1="150" x2="478" y2="150" stroke="#639922" stroke-width="1.5" marker-end="url(#ahG)"/>
+<text class="ts" x="452" y="144" text-anchor="start">yes</text>
+<line x1="340" y1="166" x2="340" y2="192" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<text class="ts" x="350" y="184" text-anchor="start">no</text>
+<line x1="445" y1="208" x2="478" y2="208" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ahR)"/>
+<text class="ts" x="452" y="202" text-anchor="start">yes</text>
+<line x1="340" y1="224" x2="340" y2="250" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<text class="ts" x="350" y="242" text-anchor="start">no (unknown)</text>
+
+<line x1="300" y1="296" x2="150" y2="324" stroke="#639922" stroke-width="1.5" marker-end="url(#ahG)"/>
+<line x1="340" y1="296" x2="340" y2="324" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ahR)"/>
+<line x1="380" y1="296" x2="540" y2="324" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ahR)"/>
+<text class="ts" x="150" y="314" text-anchor="middle">y</text>
+<text class="ts" x="346" y="314" text-anchor="start">N</text>
+<text class="ts" x="512" y="314" text-anchor="middle">a / EOF / Ctrl-C</text>
+
+<line x1="135" y1="360" x2="135" y2="380" stroke="#639922" stroke-width="1.5" marker-end="url(#ahG)"/>
+<line x1="340" y1="360" x2="340" y2="380" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ahR)"/>
+<line x1="545" y1="360" x2="545" y2="380" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ahR)"/>
+
+<g class="c-gray"><rect x="230" y="40" width="220" height="32" rx="8"/><text class="t" x="340" y="60" text-anchor="middle">DomainGate.allows(url)</text></g>
+<g class="c-coral"><rect x="20" y="82" width="160" height="40" rx="8"/><text class="t" x="100" y="99" text-anchor="middle">DROP</text><text class="ts" x="100" y="114" text-anchor="middle">SSRF · non-overridable</text></g>
+<line x1="200" y1="102" x2="182" y2="102" stroke="#E24B4A" stroke-width="1.5" marker-end="url(#ahR)"/>
+<g class="c-gray"><rect x="200" y="86" width="280" height="32" rx="8"/><text class="t" x="340" y="102" text-anchor="middle">ssrf_reason(url) · then host extract</text><text class="ts" x="340" y="114" text-anchor="middle">(blocked → DROP · no host → deny)</text></g>
+<g class="c-gray"><rect x="235" y="134" width="210" height="32" rx="8"/><text class="t" x="340" y="154" text-anchor="middle">host ∈ allow set?</text></g>
+<g class="c-green"><rect x="478" y="130" width="176" height="40" rx="8"/><text class="t" x="566" y="147" text-anchor="middle">allow — silent</text><text class="ts" x="566" y="162" text-anchor="middle">scrape proceeds</text></g>
+<g class="c-gray"><rect x="235" y="192" width="210" height="32" rx="8"/><text class="t" x="340" y="212" text-anchor="middle">host ∈ deny set?</text></g>
+<g class="c-red"><rect x="478" y="188" width="176" height="40" rx="8"/><text class="t" x="566" y="205" text-anchor="middle">deny — silent</text><text class="ts" x="566" y="220" text-anchor="middle">→ scrape_skipped</text></g>
+<g class="c-amber"><rect x="190" y="250" width="300" height="46" rx="8"/><text class="t" x="340" y="270" text-anchor="middle">unknown → lock · re-check · prompt(host)</text><text class="ts" x="340" y="287" text-anchor="middle">[y = allow / N = deny / a = abort]</text></g>
+
+<g class="c-gray"><rect x="40" y="324" width="190" height="36" rx="8"/><text class="ts" x="135" y="346" text-anchor="middle">allow.add(host) · _persist()</text></g>
+<g class="c-gray"><rect x="245" y="324" width="190" height="36" rx="8"/><text class="ts" x="340" y="346" text-anchor="middle">deny.add(host) · _persist()</text></g>
+<g class="c-gray"><rect x="450" y="324" width="190" height="36" rx="8"/><text class="ts" x="545" y="346" text-anchor="middle">raise ErrAborted</text></g>
+
+<g class="c-green"><rect x="40" y="380" width="190" height="42" rx="8"/><text class="t" x="135" y="400" text-anchor="middle">ALLOW</text><text class="ts" x="135" y="415" text-anchor="middle">scrape proceeds</text></g>
+<g class="c-red"><rect x="245" y="380" width="190" height="42" rx="8"/><text class="t" x="340" y="400" text-anchor="middle">DENY</text><text class="ts" x="340" y="415" text-anchor="middle">scrape_skipped</text></g>
+<g class="c-red"><rect x="450" y="380" width="190" height="42" rx="8"/><text class="t" x="545" y="400" text-anchor="middle">ABORT</text><text class="ts" x="545" y="415" text-anchor="middle">loop breaks → synthesize</text></g>
+
+<text class="ts" x="40" y="452" text-anchor="start">persisted: load() seeds allow = seed ∪ domains.json; y/N answers written back to ~/.columbo/domains.json (remembered next run).</text>
+</svg>

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 300" role="img">
+<title>The RAG triad: three metrics on the three edges of question, contexts, and answer</title>
+<desc>Question, contexts, and answer form a triangle. Context precision measures the question-to-contexts edge (retrieval relevance), faithfulness the contexts-to-answer edge (grounding), and answer relevancy the question-to-answer edge (does it address the question).</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.6}.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-teal>rect{fill:#E1F5EE;stroke:#0F6E56;stroke-width:.6}.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+.c-purple>rect{fill:#EEEDFE;stroke:#534AB7;stroke-width:.6}.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-coral>rect{fill:#FAECE7;stroke:#993C1D;stroke-width:.6}.c-coral .th{fill:#712B13}.c-coral .ts{fill:#993C1D}
+</style>
+<rect x="0" y="0" width="680" height="300" fill="#ffffff"/>
+
+<line x1="300" y1="78" x2="150" y2="200" stroke="#B4B2A9" stroke-width="1.2"/>
+<line x1="380" y1="78" x2="530" y2="200" stroke="#B4B2A9" stroke-width="1.2"/>
+<line x1="210" y1="222" x2="470" y2="222" stroke="#B4B2A9" stroke-width="1.2"/>
+
+<g class="c-gray"><rect x="260" y="36" width="160" height="42" rx="8"/><text class="th" x="340" y="56" text-anchor="middle">question</text><text class="ts" x="340" y="71" text-anchor="middle">what was asked</text></g>
+<g class="c-gray"><rect x="60" y="200" width="150" height="42" rx="8"/><text class="th" x="135" y="220" text-anchor="middle">contexts</text><text class="ts" x="135" y="235" text-anchor="middle">retrieved evidence</text></g>
+<g class="c-gray"><rect x="470" y="200" width="150" height="42" rx="8"/><text class="th" x="545" y="220" text-anchor="middle">answer</text><text class="ts" x="545" y="235" text-anchor="middle">what Columbo said</text></g>
+
+<g class="c-teal"><rect x="70" y="118" width="150" height="24" rx="12"/><text class="ts" x="145" y="134" text-anchor="middle">context precision</text></g>
+<text class="ts" x="145" y="158" text-anchor="middle" fill="#0F6E56">did retrieval bring</text>
+<text class="ts" x="145" y="174" text-anchor="middle" fill="#0F6E56">relevant evidence?</text>
+
+<g class="c-purple"><rect x="458" y="118" width="150" height="24" rx="12"/><text class="ts" x="533" y="134" text-anchor="middle">answer relevancy</text></g>
+<text class="ts" x="533" y="158" text-anchor="middle" fill="#534AB7">does it address</text>
+<text class="ts" x="533" y="174" text-anchor="middle" fill="#534AB7">the question?</text>
+
+<g class="c-coral"><rect x="278" y="210" width="124" height="24" rx="12"/><text class="ts" x="340" y="226" text-anchor="middle">faithfulness</text></g>
+<text class="ts" x="340" y="258" text-anchor="middle" fill="#993C1D">is the answer grounded in the evidence, not hallucinated?</text>
+
+<text class="ts" x="340" y="286" text-anchor="middle">three edges, three independent failure modes — a good answer must pass all three</text>
+</svg>

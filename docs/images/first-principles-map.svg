@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 374" role="img">
+<title>Map of Columbo's governing principles, grouped by aspect</title>
+<desc>Six clusters: the agent loop, judgment, trust and safety, identity, retrieval and sources, and engineering invariants — each with its core principles.</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:11px;fill:#5F5E5A}.th{font-size:14px;font-weight:500}
+</style>
+<rect x="0" y="0" width="680" height="374" fill="#ffffff"/>
+
+<rect x="20" y="40" width="200" height="150" rx="12" fill="none" stroke="#534AB7" stroke-width="1"/>
+<text class="th" x="36" y="66" fill="#3C3489">the agent loop</text>
+<text class="ts" x="36" y="90">· judgment + action, looped</text>
+<text class="ts" x="36" y="110">· self-terminating exits</text>
+<text class="ts" x="36" y="130">· cost tracks stakes</text>
+
+<rect x="240" y="40" width="200" height="150" rx="12" fill="none" stroke="#185FA5" stroke-width="1"/>
+<text class="th" x="256" y="66" fill="#0C447C">judgment → numbers</text>
+<text class="ts" x="256" y="90">· orthogonal dimensions</text>
+<text class="ts" x="256" y="110">· confidence = stop signal</text>
+<text class="ts" x="256" y="130">· grounding, not truth</text>
+
+<rect x="460" y="40" width="200" height="150" rx="12" fill="none" stroke="#993C1D" stroke-width="1"/>
+<text class="th" x="476" y="66" fill="#712B13">trust &amp; safety</text>
+<text class="ts" x="476" y="90">· untrusted × power</text>
+<text class="ts" x="476" y="110">· guard every boundary</text>
+<text class="ts" x="476" y="130">· fail-closed / fail-open</text>
+
+<rect x="20" y="204" width="200" height="150" rx="12" fill="none" stroke="#0F6E56" stroke-width="1"/>
+<text class="th" x="36" y="230" fill="#085041">identity</text>
+<text class="ts" x="36" y="254">· authn · authz · delegation</text>
+<text class="ts" x="36" y="274">· match auth to deployment</text>
+
+<rect x="240" y="204" width="200" height="150" rx="12" fill="none" stroke="#3B6D11" stroke-width="1"/>
+<text class="th" x="256" y="230" fill="#27500A">retrieval &amp; sources</text>
+<text class="ts" x="256" y="254">· federate, don't centralize</text>
+<text class="ts" x="256" y="274">· speak native queries</text>
+<text class="ts" x="256" y="294">· cite resolvable links</text>
+
+<rect x="460" y="204" width="200" height="150" rx="12" fill="none" stroke="#5F5E5A" stroke-width="1"/>
+<text class="th" x="476" y="230" fill="#444441">engineering invariants</text>
+<text class="ts" x="476" y="252">· same input → same output</text>
+<text class="ts" x="476" y="271">· schema-validated output</text>
+<text class="ts" x="476" y="290">· stdlib core, no framework</text>
+<text class="ts" x="476" y="309">· engine ≠ delivery</text>
+</svg>

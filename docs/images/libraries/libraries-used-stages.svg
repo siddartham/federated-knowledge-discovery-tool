@@ -1,0 +1,100 @@
+<svg width="680" height="772" viewBox="0 0 680 772" role="img" xmlns="http://www.w3.org/2000/svg">
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}
+.ts{font-size:12px;fill:#5F5E5A}
+.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.arr{fill:none;stroke:#5F5E5A;stroke-width:1.5;marker-end:url(#arrow)}
+.box{fill:#FBFAF7;stroke:#888780;stroke-width:0.6}
+.node{cursor:pointer}
+.leader{fill:none;stroke:#B4B2A9;stroke-width:0.5;stroke-dasharray:2 2}
+.c-gray>rect,.c-gray>circle,.c-gray>ellipse{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:0.6}
+.c-gray .t,.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-purple>rect,.c-purple>circle,.c-purple>ellipse{fill:#EEEDFE;stroke:#534AB7;stroke-width:0.6}
+.c-purple .t,.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal>rect,.c-teal>circle,.c-teal>ellipse{fill:#E1F5EE;stroke:#0F6E56;stroke-width:0.6}
+.c-teal .t,.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+.c-amber>rect,.c-amber>circle,.c-amber>ellipse{fill:#FAEEDA;stroke:#854F0B;stroke-width:0.6}
+.c-amber .t,.c-amber .th{fill:#633806}.c-amber .ts{fill:#854F0B}
+.c-coral>rect,.c-coral>circle,.c-coral>ellipse{fill:#FAECE7;stroke:#993C1D;stroke-width:0.6}
+.c-coral .t,.c-coral .th{fill:#712B13}.c-coral .ts{fill:#993C1D}
+.c-green>rect,.c-green>circle,.c-green>ellipse{fill:#EAF3DE;stroke:#3B6D11;stroke-width:0.6}
+.c-green .t,.c-green .th{fill:#27500A}.c-green .ts{fill:#3B6D11}
+.c-blue>rect,.c-blue>circle,.c-blue>ellipse{fill:#E6F1FB;stroke:#185FA5;stroke-width:0.6}
+.c-blue .t,.c-blue .th{fill:#0C447C}.c-blue .ts{fill:#185FA5}
+.c-red>rect,.c-red>circle,.c-red>ellipse{fill:#FCEBEB;stroke:#A32D2D;stroke-width:0.6}
+.c-red .t,.c-red .th{fill:#791F1F}.c-red .ts{fill:#A32D2D}
+.c-pink>rect,.c-pink>circle,.c-pink>ellipse{fill:#FBEAF0;stroke:#993556;stroke-width:0.6}
+.c-pink .t,.c-pink .th{fill:#72243E}.c-pink .ts{fill:#993556}
+</style>
+<rect x="0" y="0" width="680" height="772" fill="#ffffff"/>
+<title>Columbo components mapped to the libraries that enable them</title>
+<desc>Each pipeline component is mapped to the library that powers it, grouped by layer: Typer and Rich for CLI, asyncio and tomllib (stdlib) for orchestration and config, anthropic, jinja2 and pydantic for the LLM and prompts, httpx and google-auth for sources, playwright, httpx and tenacity for scraping, diskcache and structlog for persistence and observability, and stdlib for the domain gate. Star marks Python standard library with no external dependency.</desc>
+
+<line x1="40" y1="58" x2="636" y2="58" stroke="#b4b2a9" stroke-width="1"/>
+<text class="t" x="40" y="52" text-anchor="start">cli &amp; output</text>
+<text class="ts" x="48" y="80" text-anchor="start">commands · flags · subcommands (ask / interactive / devtools)</text>
+<g class="c-coral"><rect x="588" y="68" width="48" height="18" rx="9"/><text class="ts" x="612" y="81" text-anchor="middle">typer</text></g>
+<text class="ts" x="48" y="104" text-anchor="start">rendered markdown answer + run metrics</text>
+<g class="c-coral"><rect x="592" y="92" width="44" height="18" rx="9"/><text class="ts" x="614" y="105" text-anchor="middle">rich</text></g>
+
+<line x1="40" y1="134" x2="636" y2="134" stroke="#b4b2a9" stroke-width="1"/>
+<text class="t" x="40" y="128" text-anchor="start">orchestration &amp; config</text>
+<text class="ts" x="48" y="156" text-anchor="start">route → plan → execute → score loop · parallel fan-out (gather)</text>
+<g class="c-gray"><rect x="566" y="144" width="70" height="18" rx="9"/><text class="ts" x="601" y="157" text-anchor="middle">asyncio *</text></g>
+<text class="ts" x="48" y="180" text-anchor="start">config load (config/defaults.toml → SETTINGS)</text>
+<g class="c-gray"><rect x="566" y="168" width="70" height="18" rx="9"/><text class="ts" x="601" y="181" text-anchor="middle">tomllib *</text></g>
+
+<line x1="40" y1="210" x2="636" y2="210" stroke="#b4b2a9" stroke-width="1"/>
+<text class="t" x="40" y="204" text-anchor="start">llm &amp; prompts</text>
+<text class="ts" x="48" y="232" text-anchor="start">Claude route / plan / score / restitch / synthesize (5 calls)</text>
+<g class="c-purple"><rect x="556" y="220" width="80" height="18" rx="9"/><text class="ts" x="596" y="233" text-anchor="middle">anthropic</text></g>
+<text class="ts" x="48" y="256" text-anchor="start">prompt templates (select_tools / orchestrate / score / … .j2)</text>
+<g class="c-purple"><rect x="580" y="244" width="56" height="18" rx="9"/><text class="ts" x="608" y="257" text-anchor="middle">jinja2</text></g>
+<text class="ts" x="48" y="280" text-anchor="start">typed LLM JSON shapes + range validation</text>
+<g class="c-purple"><rect x="566" y="268" width="70" height="18" rx="9"/><text class="ts" x="601" y="281" text-anchor="middle">pydantic</text></g>
+<text class="ts" x="48" y="304" text-anchor="start">JSON recovery (extract_json) · acronym regex + stoplist</text>
+<g class="c-gray"><rect x="574" y="292" width="62" height="18" rx="9"/><text class="ts" x="605" y="305" text-anchor="middle">stdlib *</text></g>
+
+<line x1="40" y1="334" x2="636" y2="334" stroke="#b4b2a9" stroke-width="1"/>
+<text class="t" x="40" y="328" text-anchor="start">sources · rest search &amp; lookup</text>
+<text class="ts" x="48" y="356" text-anchor="start">Slack · Confluence · Jira · GitHub · Drive APIs</text>
+<g class="c-teal"><rect x="588" y="344" width="48" height="18" rx="9"/><text class="ts" x="612" y="357" text-anchor="middle">httpx</text></g>
+<text class="ts" x="48" y="380" text-anchor="start">Google Drive OAuth (consent + refresh token)</text>
+<g class="c-teal"><rect x="542" y="368" width="94" height="18" rx="9"/><text class="ts" x="589" y="381" text-anchor="middle">google-auth</text></g>
+<text class="ts" x="48" y="404" text-anchor="start">acronym dictionary fetch + HTML parse (+ html.parser *)</text>
+<g class="c-teal"><rect x="588" y="392" width="48" height="18" rx="9"/><text class="ts" x="612" y="405" text-anchor="middle">httpx</text></g>
+
+<line x1="40" y1="434" x2="636" y2="434" stroke="#b4b2a9" stroke-width="1"/>
+<text class="t" x="40" y="428" text-anchor="start">scrape / browser</text>
+<text class="ts" x="48" y="456" text-anchor="start">page render · innerText · Slack xoxc token grab</text>
+<g class="c-teal"><rect x="556" y="444" width="80" height="18" rx="9"/><text class="ts" x="596" y="457" text-anchor="middle">playwright</text></g>
+<text class="ts" x="48" y="480" text-anchor="start">httpx fallback fetch (when browser session fails)</text>
+<g class="c-teal"><rect x="588" y="468" width="48" height="18" rx="9"/><text class="ts" x="612" y="481" text-anchor="middle">httpx</text></g>
+<text class="ts" x="48" y="504" text-anchor="start">fetch retry / fixed-wait backoff</text>
+<g class="c-teal"><rect x="568" y="492" width="68" height="18" rx="9"/><text class="ts" x="602" y="505" text-anchor="middle">tenacity</text></g>
+
+<line x1="40" y1="534" x2="636" y2="534" stroke="#b4b2a9" stroke-width="1"/>
+<text class="t" x="40" y="528" text-anchor="start">persistence &amp; observability</text>
+<text class="ts" x="48" y="556" text-anchor="start">4 on-disk caches (response / search / lookup / scrape)</text>
+<g class="c-blue"><rect x="560" y="544" width="76" height="18" rx="9"/><text class="ts" x="598" y="557" text-anchor="middle">diskcache</text></g>
+<text class="ts" x="48" y="580" text-anchor="start">structured JSON event log (run.jsonl)</text>
+<g class="c-blue"><rect x="560" y="568" width="76" height="18" rx="9"/><text class="ts" x="598" y="581" text-anchor="middle">structlog</text></g>
+
+<line x1="40" y1="610" x2="636" y2="610" stroke="#b4b2a9" stroke-width="1"/>
+<text class="t" x="40" y="604" text-anchor="start">domain gate</text>
+<text class="ts" x="48" y="632" text-anchor="start">SSRF precheck · allow / deny / prompt / persist · host parse</text>
+<g class="c-gray"><rect x="574" y="620" width="62" height="18" rx="9"/><text class="ts" x="605" y="633" text-anchor="middle">stdlib *</text></g>
+
+<line x1="40" y1="662" x2="636" y2="662" stroke="#b4b2a9" stroke-width="1"/>
+<text class="t" x="40" y="656" text-anchor="start">guardrails &amp; mcp</text>
+<text class="ts" x="48" y="684" text-anchor="start">tool gate · injection defuse · secret redaction · SSRF</text>
+<g class="c-purple"><rect x="580" y="672" width="56" height="18" rx="9"/><text class="ts" x="608" y="685" text-anchor="middle">jinja2</text></g>
+<g class="c-gray"><rect x="510" y="672" width="62" height="18" rx="9"/><text class="ts" x="541" y="685" text-anchor="middle">stdlib *</text></g>
+<text class="ts" x="48" y="708" text-anchor="start">MCP tool provider + per-question routing · per-principal cache</text>
+<g class="c-teal"><rect x="588" y="696" width="48" height="18" rx="9"/><text class="ts" x="612" y="709" text-anchor="middle">mcp</text></g>
+<g class="c-blue"><rect x="510" y="696" width="72" height="18" rx="9"/><text class="ts" x="546" y="709" text-anchor="middle">diskcache</text></g>
+
+<text class="ts" x="40" y="740" text-anchor="start">* = Python standard library (asyncio · json · re · tomllib · urllib · ipaddress · html.parser · http.server) — no external dependency.</text>
+<text class="ts" x="40" y="760" text-anchor="start">colour = layer: coral cli · purple llm · teal i/o &amp; sources · blue infra · gray stdlib.</text>
+</svg>

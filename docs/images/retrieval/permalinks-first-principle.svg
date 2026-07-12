@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 236" role="img">
+<title>A citation is only useful if its link resolves; permalink reliability varies by source</title>
+<desc>Some permalinks are constructed and always valid, others come from an API and may be null, so every permalink is treated as optional and null-guarded.</desc>
+<defs><marker id="arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.6}.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-green>rect{fill:#EAF3DE;stroke:#3B6D11;stroke-width:.6}.c-green .th{fill:#27500A}.c-green .ts{fill:#3B6D11}
+.c-amber>rect{fill:#FAEEDA;stroke:#854F0B;stroke-width:.6}.c-amber .th{fill:#633806}.c-amber .ts{fill:#854F0B}
+</style>
+<rect x="0" y="0" width="680" height="236" fill="#ffffff"/>
+
+<g class="c-gray"><rect x="20" y="80" width="150" height="52" rx="6"/><text class="th" x="95" y="102" text-anchor="middle">a result</text><text class="ts" x="95" y="120" text-anchor="middle">wants a permalink</text></g>
+
+<g class="c-green"><rect x="270" y="40" width="260" height="52" rx="6"/><text class="th" x="400" y="62" text-anchor="middle">constructed → ✓ always valid</text><text class="ts" x="400" y="80" text-anchor="middle">Jira /browse/KEY · GitHub html_url</text></g>
+<g class="c-amber"><rect x="270" y="120" width="260" height="52" rx="6"/><text class="th" x="400" y="142" text-anchor="middle">API-provided → ⚠ may be null</text><text class="ts" x="400" y="160" text-anchor="middle">Slack · Drive (field can be absent)</text></g>
+
+<line class="arr" x1="170" y1="98" x2="270" y2="66"/>
+<line class="arr" x1="170" y1="114" x2="270" y2="146"/>
+
+<g class="c-gray"><rect x="560" y="80" width="108" height="52" rx="6"/><text class="th" x="614" y="102" text-anchor="middle">rule</text><text class="ts" x="614" y="120" text-anchor="middle">None-guard both</text></g>
+<line class="arr" x1="530" y1="66" x2="560" y2="98"/>
+<line class="arr" x1="530" y1="146" x2="560" y2="114"/>
+
+<text class="ts" x="340" y="208" text-anchor="middle">treat every permalink as optional — None-guard on read and write, so a missing link degrades instead of pointing at the wrong page</text>
+</svg>

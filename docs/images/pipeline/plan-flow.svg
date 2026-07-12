@@ -1,0 +1,62 @@
+<svg width="680" height="582" viewBox="0 0 680 582" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>ClaudeClient.generate two-layer cache and parse-validate path</title>
+<desc>A stage caller renders a prompt and calls ClaudeClient.generate, which hashes model plus prompts into a key and checks the on-disk response cache; a hit returns a cached response with zero tokens, a miss calls the Anthropic API with an ephemeral system-block cache, writes the permanent response cache, records cost, then extract_json recovers the JSON and Pydantic validates it into the stage's model.</desc>
+<defs>
+<marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#888780"/></marker>
+<marker id="ahG" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#639922"/></marker>
+</defs>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}
+.ts{font-size:12px;fill:#5F5E5A}
+.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.arr{fill:none;stroke:#5F5E5A;stroke-width:1.5;marker-end:url(#arrow)}
+.box{fill:#FBFAF7;stroke:#888780;stroke-width:0.6}
+.node{cursor:pointer}
+.leader{fill:none;stroke:#B4B2A9;stroke-width:0.5;stroke-dasharray:2 2}
+.c-gray>rect,.c-gray>circle,.c-gray>ellipse{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:0.6}
+.c-gray .t,.c-gray .th{fill:#444441}.c-gray .ts{fill:#5F5E5A}
+.c-purple>rect,.c-purple>circle,.c-purple>ellipse{fill:#EEEDFE;stroke:#534AB7;stroke-width:0.6}
+.c-purple .t,.c-purple .th{fill:#3C3489}.c-purple .ts{fill:#534AB7}
+.c-teal>rect,.c-teal>circle,.c-teal>ellipse{fill:#E1F5EE;stroke:#0F6E56;stroke-width:0.6}
+.c-teal .t,.c-teal .th{fill:#085041}.c-teal .ts{fill:#0F6E56}
+.c-amber>rect,.c-amber>circle,.c-amber>ellipse{fill:#FAEEDA;stroke:#854F0B;stroke-width:0.6}
+.c-amber .t,.c-amber .th{fill:#633806}.c-amber .ts{fill:#854F0B}
+.c-coral>rect,.c-coral>circle,.c-coral>ellipse{fill:#FAECE7;stroke:#993C1D;stroke-width:0.6}
+.c-coral .t,.c-coral .th{fill:#712B13}.c-coral .ts{fill:#993C1D}
+.c-green>rect,.c-green>circle,.c-green>ellipse{fill:#EAF3DE;stroke:#3B6D11;stroke-width:0.6}
+.c-green .t,.c-green .th{fill:#27500A}.c-green .ts{fill:#3B6D11}
+.c-blue>rect,.c-blue>circle,.c-blue>ellipse{fill:#E6F1FB;stroke:#185FA5;stroke-width:0.6}
+.c-blue .t,.c-blue .th{fill:#0C447C}.c-blue .ts{fill:#185FA5}
+.c-red>rect,.c-red>circle,.c-red>ellipse{fill:#FCEBEB;stroke:#A32D2D;stroke-width:0.6}
+.c-red .t,.c-red .th{fill:#791F1F}.c-red .ts{fill:#A32D2D}
+.c-pink>rect,.c-pink>circle,.c-pink>ellipse{fill:#FBEAF0;stroke:#993556;stroke-width:0.6}
+.c-pink .t,.c-pink .th{fill:#72243E}.c-pink .ts{fill:#993556}
+</style>
+<rect x="0" y="0" width="680" height="582" fill="#ffffff"/>
+
+<line x1="340" y1="74" x2="340" y2="90" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="340" y1="120" x2="340" y2="136" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="340" y1="182" x2="340" y2="200" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="445" y1="217" x2="470" y2="217" stroke="#639922" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ahG)"/>
+<line x1="340" y1="234" x2="340" y2="254" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="340" y1="302" x2="340" y2="318" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="340" y1="352" x2="340" y2="366" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="340" y1="396" x2="340" y2="410" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="340" y1="456" x2="340" y2="472" stroke="#888780" stroke-width="1.5" marker-end="url(#ah)"/>
+<text class="ts" x="350" y="248" text-anchor="start">miss</text>
+
+<g class="c-gray"><rect x="170" y="44" width="340" height="30" rx="8"/><text class="t" x="340" y="64" text-anchor="middle">caller: select_tools · _plan · score · restitch · _synthesize</text></g>
+<g class="c-gray"><rect x="195" y="90" width="290" height="30" rx="8"/><text class="t" x="340" y="110" text-anchor="middle">render_prompt(*.j2) → (system, user)</text></g>
+<g class="c-purple"><rect x="160" y="136" width="360" height="46" rx="8"/><text class="t" x="340" y="156" text-anchor="middle">ClaudeClient.generate(system, prompt, model)</text><text class="ts" x="340" y="173" text-anchor="middle">key = v1: sha256(model, system, user)</text></g>
+<g class="c-blue"><rect x="235" y="200" width="210" height="34" rx="8"/><text class="t" x="340" y="221" text-anchor="middle">response_cache.get(key)</text></g>
+<g class="c-green"><rect x="470" y="194" width="185" height="46" rx="8"/><text class="t" x="562" y="213" text-anchor="middle">hit → return</text><text class="ts" x="562" y="229" text-anchor="middle">cached · 0 tokens</text></g>
+<g class="c-purple"><rect x="150" y="254" width="380" height="48" rx="8"/><text class="t" x="340" y="274" text-anchor="middle">AsyncAnthropic.messages.create</text><text class="ts" x="340" y="291" text-anchor="middle">max_tokens 8192 · system[cache_control: ephemeral]</text></g>
+<g class="c-blue"><rect x="175" y="318" width="330" height="34" rx="8"/><text class="t" x="340" y="339" text-anchor="middle">response_cache.set(key, text) · permanent</text></g>
+<g class="c-gray"><rect x="200" y="366" width="280" height="30" rx="8"/><text class="t" x="340" y="386" text-anchor="middle">emit · CostTracker.record(model, tokens)</text></g>
+<g class="c-gray"><rect x="160" y="410" width="360" height="46" rx="8"/><text class="t" x="340" y="430" text-anchor="middle">extract_json(text)</text><text class="ts" x="340" y="447" text-anchor="middle">raw → strip fences → brace-scan (string-aware)</text></g>
+<g class="c-teal"><rect x="150" y="472" width="380" height="46" rx="8"/><text class="t" x="340" y="492" text-anchor="middle">Model.model_validate(…)</text><text class="ts" x="340" y="509" text-anchor="middle">Orchestration · ScoreResult[] · Synthesis</text></g>
+
+<text class="ts" x="40" y="548" text-anchor="start">layer 1 · response_cache (on-disk, permanent): byte-identical, free re-runs — keyed on model + both prompts.</text>
+<text class="ts" x="40" y="566" text-anchor="start">layer 2 · Anthropic ephemeral cache on the system block: cuts latency/cost on a disk miss when the system prompt repeats.</text>
+</svg>

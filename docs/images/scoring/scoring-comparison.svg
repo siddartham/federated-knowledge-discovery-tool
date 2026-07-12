@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 392" role="img">
+<title>Planner confidence versus the Haiku scorer: same recipe, opposite jobs</title>
+<desc>Two cards share one recipe. Planner confidence is a global self-graded stop signal on the loop; the Haiku scorer is a cheap local keep signal on the evidence.</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}
+.tsm{font-size:11px;fill:#5F5E5A}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.6}.c-gray .th{fill:#444441}.c-gray .ts,.c-gray .tsm{fill:#5F5E5A}
+</style>
+<rect x="0" y="0" width="680" height="392" fill="#ffffff"/>
+
+<g class="c-gray"><rect x="150" y="20" width="380" height="32" rx="16"/><text class="ts" x="340" y="40" text-anchor="middle">shared recipe · 4 dims, each 0–13 (Fibonacci) · equal mean → [0,1]</text></g>
+<line x1="200" y1="52" x2="176" y2="84" stroke="#D3D1C7" stroke-width="1"/>
+<line x1="480" y1="52" x2="504" y2="84" stroke="#D3D1C7" stroke-width="1"/>
+
+<rect x="24" y="84" width="304" height="270" rx="12" fill="none" stroke="#534AB7" stroke-width="1"/>
+<text class="th" x="42" y="110" text-anchor="start" fill="#3C3489">planner confidence — the STOP signal</text>
+<text class="tsm" x="42" y="134" text-anchor="start">question:  are we done gathering?</text>
+<text class="tsm" x="42" y="152" text-anchor="start">judged by:  the planner itself (Sonnet), each round</text>
+<text class="tsm" x="42" y="176" text-anchor="start">dimensions (readiness of the whole run):</text>
+<g class="c-gray"><rect x="42" y="186" width="128" height="20" rx="10"/><text class="tsm" x="106" y="200" text-anchor="middle">explicit evidence</text></g>
+<g class="c-gray"><rect x="176" y="186" width="128" height="20" rx="10"/><text class="tsm" x="240" y="200" text-anchor="middle">implicit evidence</text></g>
+<g class="c-gray"><rect x="42" y="212" width="128" height="20" rx="10"/><text class="tsm" x="106" y="226" text-anchor="middle">consistency</text></g>
+<g class="c-gray"><rect x="176" y="212" width="128" height="20" rx="10"/><text class="tsm" x="240" y="226" text-anchor="middle">specificity</text></g>
+<text class="tsm" x="42" y="258" text-anchor="start">gates:  the loop — mean ≥ 0.8 stops it</text>
+<text class="tsm" x="42" y="284" text-anchor="start">property: 0.8 &gt; 39/52, so no single</text>
+<text class="tsm" x="42" y="300" text-anchor="start">dimension can be 0 at exit — the mean</text>
+<text class="tsm" x="42" y="316" text-anchor="start">can't be gamed by three strong axes.</text>
+
+<rect x="352" y="84" width="304" height="270" rx="12" fill="none" stroke="#0F6E56" stroke-width="1"/>
+<text class="th" x="370" y="110" text-anchor="start" fill="#085041">the scorer — the KEEP signal</text>
+<text class="tsm" x="370" y="134" text-anchor="start">question:  how good is THIS item?</text>
+<text class="tsm" x="370" y="152" text-anchor="start">judged by:  a cheap model (Haiku), N× per round</text>
+<text class="tsm" x="370" y="176" text-anchor="start">dimensions (usefulness of one item):</text>
+<g class="c-gray"><rect x="370" y="186" width="128" height="20" rx="10"/><text class="tsm" x="434" y="200" text-anchor="middle">direct relevance</text></g>
+<g class="c-gray"><rect x="504" y="186" width="128" height="20" rx="10"/><text class="tsm" x="568" y="200" text-anchor="middle">answer potential</text></g>
+<g class="c-gray"><rect x="370" y="212" width="128" height="20" rx="10"/><text class="tsm" x="434" y="226" text-anchor="middle">context value</text></g>
+<g class="c-gray"><rect x="504" y="212" width="128" height="20" rx="10"/><text class="tsm" x="568" y="226" text-anchor="middle">source quality</text></g>
+<text class="tsm" x="370" y="258" text-anchor="start">gates:  the evidence — top-8, or mean ≥ ~4/13</text>
+<text class="tsm" x="370" y="284" text-anchor="start">soft spot: the mean lets source quality</text>
+<text class="tsm" x="370" y="300" text-anchor="start">compensate for low relevance — an</text>
+<text class="tsm" x="370" y="316" text-anchor="start">authoritative-but-tangential doc can slip in.</text>
+
+<g class="c-gray"><rect x="24" y="366" width="632" height="0.6"/></g>
+<text class="tsm" x="340" y="382" text-anchor="middle">global · forward-looking · self-graded · gates the loop      ‖      local · backward-looking · cheap · gates the evidence</text>
+</svg>

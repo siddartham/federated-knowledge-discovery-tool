@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 332" role="img">
+<title>Other A/B tests worth running, by leverage and how testable they are today</title>
+<desc>A prerequisite of validating the judge, then three tiers: config-toggleable tests runnable today, tests needing a small toggle, and branch-based prompt tests.</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500}.tsm{font-size:11px;fill:#5F5E5A}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.6}.c-gray .tsm{fill:#5F5E5A}
+</style>
+<rect x="0" y="0" width="680" height="332" fill="#ffffff"/>
+
+<rect x="20" y="26" width="640" height="46" rx="10" fill="none" stroke="#185FA5" stroke-width="1"/>
+<text class="th" x="36" y="48" fill="#0C447C">prerequisite — validate the judge</text>
+<text class="tsm" x="36" y="64">human-labeled agreement; every A/B verdict below rides on it (a validation, not an A/B)</text>
+
+<rect x="20" y="84" width="640" height="66" rx="10" fill="none" stroke="#3B6D11" stroke-width="1"/>
+<text class="th" x="36" y="106" fill="#27500A">runnable today — config toggle (ab_config.sh)</text>
+<g class="c-gray"><rect x="36" y="116" width="128" height="20" rx="10"/><text class="tsm" x="100" y="130" text-anchor="middle">confidence cutoff</text></g>
+<g class="c-gray"><rect x="172" y="116" width="104" height="20" rx="10"/><text class="tsm" x="224" y="130" text-anchor="middle">model tiering</text></g>
+<g class="c-gray"><rect x="284" y="116" width="120" height="20" rx="10"/><text class="tsm" x="344" y="130" text-anchor="middle">selection knobs</text></g>
+<text class="tsm" x="418" y="130">→ quality vs cost · context_precision</text>
+
+<rect x="20" y="162" width="640" height="66" rx="10" fill="none" stroke="#854F0B" stroke-width="1"/>
+<text class="th" x="36" y="184" fill="#633806">needs a small toggle</text>
+<g class="c-gray"><rect x="36" y="194" width="184" height="20" rx="10"/><text class="tsm" x="128" y="208" text-anchor="middle">routing: semantic vs lexical</text></g>
+<g class="c-gray"><rect x="228" y="194" width="156" height="20" rx="10"/><text class="tsm" x="306" y="208" text-anchor="middle">injection-isolation tax</text></g>
+<text class="tsm" x="398" y="208">→ the control (lexical) already exists as the fallback</text>
+
+<rect x="20" y="240" width="640" height="66" rx="10" fill="none" stroke="#5F5E5A" stroke-width="1"/>
+<text class="th" x="36" y="262" fill="#444441">branch-based — prompts aren't config</text>
+<g class="c-gray"><rect x="36" y="272" width="60" height="20" rx="10"/><text class="tsm" x="66" y="286" text-anchor="middle">plan</text></g>
+<g class="c-gray"><rect x="104" y="272" width="64" height="20" rx="10"/><text class="tsm" x="136" y="286" text-anchor="middle">score</text></g>
+<g class="c-gray"><rect x="176" y="272" width="94" height="20" rx="10"/><text class="tsm" x="223" y="286" text-anchor="middle">synthesize</text></g>
+<g class="c-gray"><rect x="278" y="272" width="110" height="20" rx="10"/><text class="tsm" x="333" y="286" text-anchor="middle">route rubrics</text></g>
+<text class="tsm" x="402" y="286">→ the everyday case; A/B across git branches</text>
+
+<text class="tsm" x="340" y="324" text-anchor="middle">don't A/B: guardrails (safety, not a quality knob) · determinism / caching (correctness)</text>
+</svg>

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 306" role="img">
+<title>Two hardening sketches: a relevance-gated scorer and externally-calibrated confidence</title>
+<desc>Left: relevance multiplies the mean of the other axes, so an off-topic item scores zero regardless of quality. Right: an independent verifier and an outcome-calibrated cutoff replace the planner's self-report.</desc>
+<defs><marker id="arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500;fill:#2C2C2A}.tsm{font-size:11px;fill:#5F5E5A}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.6}.c-gray .th{fill:#444441}.c-gray .ts,.c-gray .tsm{fill:#5F5E5A}
+.c-teal>rect{fill:#E1F5EE;stroke:#0F6E56;stroke-width:.6}.c-teal .th{fill:#085041}.c-teal .ts,.c-teal .tsm{fill:#0F6E56}
+.c-purple>rect{fill:#EEEDFE;stroke:#534AB7;stroke-width:.6}.c-purple .th{fill:#3C3489}.c-purple .ts,.c-purple .tsm{fill:#534AB7}
+.c-amber>rect{fill:#FAEEDA;stroke:#854F0B;stroke-width:.6}.c-amber .th{fill:#633806}.c-amber .ts,.c-amber .tsm{fill:#854F0B}
+</style>
+<rect x="0" y="0" width="680" height="306" fill="#ffffff"/>
+
+<rect x="20" y="24" width="316" height="258" rx="12" fill="none" stroke="#0F6E56" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="th" x="36" y="48" text-anchor="start" fill="#085041">A · relevance-gated scorer</text>
+<text class="tsm" x="36" y="68" text-anchor="start">relevance stops being just another term —</text>
+<text class="tsm" x="36" y="84" text-anchor="start">it becomes a multiplier on the rest.</text>
+<g class="c-teal"><rect x="36" y="100" width="120" height="40" rx="6"/><text class="tsm" x="96" y="118" text-anchor="middle">direct relevance</text><text class="tsm" x="96" y="132" text-anchor="middle">→ factor 0..1</text></g>
+<g class="c-gray"><rect x="180" y="100" width="130" height="40" rx="6"/><text class="tsm" x="245" y="118" text-anchor="middle">mean(answer,</text><text class="tsm" x="245" y="132" text-anchor="middle">context, quality)</text></g>
+<g class="c-purple"><rect x="96" y="164" width="150" height="38" rx="6"/><text class="tsm" x="171" y="181" text-anchor="middle">composite =</text><text class="tsm" x="171" y="195" text-anchor="middle">factor × mean</text></g>
+<line class="arr" x1="96" y1="140" x2="150" y2="164"/>
+<line class="arr" x1="245" y1="140" x2="192" y2="164"/>
+<text class="tsm" x="176" y="228" text-anchor="middle">relevance = 0  →  composite = 0</text>
+<text class="tsm" x="176" y="248" text-anchor="middle">an authoritative but off-topic doc</text>
+<text class="tsm" x="176" y="264" text-anchor="middle">can no longer slip past the threshold</text>
+
+<rect x="344" y="24" width="316" height="258" rx="12" fill="none" stroke="#854F0B" stroke-width="1" stroke-dasharray="5 4"/>
+<text class="th" x="360" y="48" text-anchor="start" fill="#633806">B · externally-calibrated confidence</text>
+<text class="tsm" x="360" y="68" text-anchor="start">don't trust the grader that wants to stop —</text>
+<text class="tsm" x="360" y="84" text-anchor="start">get a disinterested opinion, or tune the bar.</text>
+<g class="c-purple"><rect x="360" y="100" width="132" height="40" rx="6"/><text class="tsm" x="426" y="118" text-anchor="middle">planner self-</text><text class="tsm" x="426" y="132" text-anchor="middle">confidence</text></g>
+<g class="c-teal"><rect x="516" y="100" width="128" height="40" rx="6"/><text class="tsm" x="580" y="118" text-anchor="middle">independent</text><text class="tsm" x="580" y="132" text-anchor="middle">verifier re-scores</text></g>
+<line class="arr" x1="492" y1="120" x2="516" y2="120"/>
+<g class="c-amber"><rect x="426" y="164" width="188" height="40" rx="6"/><text class="tsm" x="520" y="181" text-anchor="middle">stop only if BOTH agree ·</text><text class="tsm" x="520" y="195" text-anchor="middle">cutoff tuned to real outcomes</text></g>
+<line class="arr" x1="426" y1="140" x2="480" y2="164"/>
+<line class="arr" x1="580" y1="140" x2="540" y2="164"/>
+<text class="tsm" x="502" y="228" text-anchor="middle">calibrate: did past ≥0.8 exits actually</text>
+<text class="tsm" x="502" y="244" text-anchor="middle">produce good answers? move the bar to</text>
+<text class="tsm" x="502" y="260" text-anchor="middle">where confidence matches correctness</text>
+</svg>

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 296" role="img">
+<title>Two ways to A/B a scoring change: the offline counterfactual and the end-to-end test</title>
+<desc>The offline counterfactual recomputes both rankings from one set of logs — free but circular, a sanity check. The end-to-end test runs each question under both configs and judges both — costs API calls but gives a verdict.</desc>
+<style>
+text{font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;fill:#2C2C2A}
+.t{font-size:14px;fill:#2C2C2A}.ts{font-size:12px;fill:#5F5E5A}.th{font-size:14px;font-weight:500}.tsm{font-size:11px;fill:#5F5E5A}
+.c-gray>rect{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.6}.c-gray .tsm{fill:#5F5E5A}
+</style>
+<rect x="0" y="0" width="680" height="296" fill="#ffffff"/>
+
+<rect x="24" y="30" width="304" height="216" rx="12" fill="none" stroke="#185FA5" stroke-width="1"/>
+<text class="th" x="42" y="56" fill="#0C447C">offline counterfactual</text>
+<text class="tsm" x="42" y="80">1 · one set of run logs (dims already logged)</text>
+<text class="tsm" x="42" y="100">2 · recompute mean &amp; gated composites</text>
+<text class="tsm" x="42" y="120">3 · compare where the cited items rank</text>
+<g class="c-gray"><rect x="42" y="136" width="120" height="20" rx="10"/><text class="tsm" x="102" y="150" text-anchor="middle">free · instant</text></g>
+<g class="c-gray"><rect x="170" y="136" width="140" height="20" rx="10"/><text class="tsm" x="240" y="150" text-anchor="middle">sanity check, not verdict</text></g>
+<text class="tsm" x="42" y="180" fill="#A32D2D">circular: the cited set came from the live config</text>
+<text class="tsm" x="42" y="216">tool:</text>
+<g class="c-gray"><rect x="82" y="204" width="234" height="22" rx="8"/><text class="tsm" x="199" y="219" text-anchor="middle">devtools analyze --compare-gate</text></g>
+
+<rect x="352" y="30" width="304" height="216" rx="12" fill="none" stroke="#0F6E56" stroke-width="1"/>
+<text class="th" x="370" y="56" fill="#085041">end-to-end A/B</text>
+<text class="tsm" x="370" y="80">1 · run each question under both configs</text>
+<text class="tsm" x="370" y="100">2 · capture {question, answer, contexts}</text>
+<text class="tsm" x="370" y="120">3 · LLM-judge both arms, paired</text>
+<g class="c-gray"><rect x="370" y="136" width="120" height="20" rx="10"/><text class="tsm" x="430" y="150" text-anchor="middle">costs API calls</text></g>
+<g class="c-gray"><rect x="498" y="136" width="120" height="20" rx="10"/><text class="tsm" x="558" y="150" text-anchor="middle">a real verdict</text></g>
+<text class="tsm" x="370" y="180" fill="#3B6D11">measures the whole trajectory (retrieval + selection)</text>
+<text class="tsm" x="370" y="216">tools:</text>
+<g class="c-gray"><rect x="416" y="204" width="234" height="22" rx="8"/><text class="tsm" x="533" y="219" text-anchor="middle">ask --capture-eval · eval · ab_gate.sh</text></g>
+
+<text class="ts" x="340" y="272" text-anchor="middle">pre-check offline for free → decide with the end-to-end verdict.  Primary metric: context precision.</text>
+</svg>

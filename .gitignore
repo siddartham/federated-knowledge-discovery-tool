@@ -15,3 +15,6 @@ browser-profile/
 dist/
 build/
 .idea
+# MkDocs build output
+/site/
+.chainlit/
